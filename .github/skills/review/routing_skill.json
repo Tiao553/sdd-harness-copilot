@@ -1,0 +1,29 @@
+{
+  "skill": "review-commands",
+  "priority": "medium",
+  "commands": {
+    "/review": {
+      "file": "commands/review.md",
+      "agent": ".github/agents/python.code-reviewer.agent.md",
+      "kb": [],
+      "input": "File or directory to review",
+      "output": "Review findings ordered by severity"
+    },
+    "/judge": {
+      "file": "commands/judge.md",
+      "agent": ".github/agents/dev.judge-agent.agent.md",
+      "kb": [],
+      "input": "File to judge + optional context and model",
+      "output": "External verdict + ledger entry in .github/storage/judge-ledger.jsonl"
+    }
+  },
+  "conditions": [
+    "User invokes /review-commands",
+    "Code review or quality assessment requested",
+    "Judge second-opinion or ledger query"
+  ],
+  "dependencies": [
+    ".github/config/grounding.md",
+    ".github/config/routing.json"
+  ]
+}

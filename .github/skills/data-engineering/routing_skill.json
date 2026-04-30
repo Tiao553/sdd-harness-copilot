@@ -1,0 +1,73 @@
+{
+  "skill": "data-engineering-commands",
+  "priority": "high",
+  "commands": {
+    "/ai-pipeline": {
+      "file": "commands/ai-pipeline.md",
+      "agent": ".github/agents/data-engineering.ai-data-engineer.agent.md",
+      "kb": ["ai-data-engineering", "streaming"],
+      "input": "AI/ML pipeline description or requirements",
+      "output": "Pipeline architecture, code, and configuration"
+    },
+    "/data-contract": {
+      "file": "commands/data-contract.md",
+      "agent": ".github/agents/test.data-contracts-engineer.agent.md",
+      "kb": ["data-quality", "data-modeling"],
+      "input": "Contract requirements or existing model",
+      "output": "ODCS contract YAML, SLA definitions"
+    },
+    "/data-quality": {
+      "file": "commands/data-quality.md",
+      "agent": ".github/agents/test.data-quality-analyst.agent.md",
+      "kb": ["data-quality", "dbt", "data-modeling"],
+      "input": "Model SQL or quality requirements",
+      "output": "Test definitions (GE, dbt, SQL)"
+    },
+    "/lakehouse": {
+      "file": "commands/lakehouse.md",
+      "agent": ".github/agents/architect.lakehouse-architect.agent.md",
+      "kb": ["lakehouse", "cloud-platforms", "spark"],
+      "input": "Lakehouse requirements or existing setup",
+      "output": "Table format config, catalog setup, architecture"
+    },
+    "/migrate": {
+      "file": "commands/migrate.md",
+      "agent": ".github/agents/data-engineering.dbt-specialist.agent.md",
+      "escalation_agent": ".github/agents/data-engineering.spark-engineer.agent.md",
+      "kb": ["dbt", "spark", "airflow", "sql-patterns"],
+      "input": "Migration source, target, and scope",
+      "output": "Migration plan, scripts, validation checks"
+    },
+    "/pipeline": {
+      "file": "commands/pipeline.md",
+      "agent": ".github/agents/architect.pipeline-architect.agent.md",
+      "kb": ["airflow", "dbt", "data-quality"],
+      "input": "Pipeline requirements or existing DAGs",
+      "output": "DAG definitions, dbt project, orchestration config"
+    },
+    "/schema": {
+      "file": "commands/schema.md",
+      "agent": ".github/agents/architect.schema-designer.agent.md",
+      "kb": ["data-modeling", "sql-patterns", "data-quality"],
+      "input": "Schema requirements or existing DDL",
+      "output": "Schema DDL, dimensional model, documentation"
+    },
+    "/sql-review": {
+      "file": "commands/sql-review.md",
+      "agent": ".github/agents/python.code-reviewer.agent.md",
+      "escalation_agent": ".github/agents/data-engineering.sql-optimizer.agent.md",
+      "kb": ["sql-patterns", "data-quality", "dbt"],
+      "input": "SQL file or query",
+      "output": "Review findings with severity and fixes"
+    }
+  },
+  "conditions": [
+    "User invokes /data-engineering-commands",
+    "SQL, dbt, Airflow, or pipeline keywords detected",
+    "Data modeling, schema, or migration context"
+  ],
+  "dependencies": [
+    ".github/config/grounding.md",
+    ".github/config/routing.json"
+  ]
+}

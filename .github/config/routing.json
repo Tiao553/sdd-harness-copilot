@@ -1,0 +1,416 @@
+{
+  "version": "1.0.0",
+  "description": "AgentSpec Agent Router — GitHub Copilot. Maps intent keywords to agent files.",
+  "default_agent": ".github/agents/architect.the-planner.agent.md",
+  "token_budget": {
+    "strategy": "lazy",
+    "note": "Load only what the matched route specifies. Never load kb_full unless quick-reference is insufficient.",
+    "max_kb_files_per_request": 3,
+    "prefer_quick_reference": true
+  },
+  "routes": [
+    {
+      "id": "dbt-specialist",
+      "triggers": [
+        "dbt",
+        "model",
+        "incremental",
+        "snapshot",
+        "semantic layer",
+        "mesh",
+        "macro"
+      ],
+      "agent": ".github/agents/data-engineering.dbt-specialist.agent.md",
+      "kb": [
+        ".github/kb/dbt/index.md"
+      ],
+      "kb_full": ".github/kb/dbt/",
+      "category": "data-engineering"
+    },
+    {
+      "id": "spark-specialist",
+      "triggers": [
+        "spark",
+        "pyspark",
+        "dataframe",
+        "rdd",
+        "catalyst",
+        "partition",
+        "delta"
+      ],
+      "agent": ".github/agents/data-engineering.spark-specialist.agent.md",
+      "kb": [
+        ".github/kb/spark/index.md"
+      ],
+      "kb_full": ".github/kb/spark/",
+      "category": "data-engineering"
+    },
+    {
+      "id": "lakeflow-specialist",
+      "triggers": [
+        "lakeflow",
+        "dlt",
+        "delta live tables",
+        "pipeline",
+        "databricks pipeline"
+      ],
+      "agent": ".github/agents/data-engineering.lakeflow-specialist.agent.md",
+      "kb": [
+        ".github/kb/lakeflow/index.md"
+      ],
+      "kb_full": ".github/kb/lakeflow/",
+      "category": "data-engineering"
+    },
+    {
+      "id": "fabric-architect",
+      "triggers": [
+        "fabric",
+        "microsoft fabric",
+        "lakehouse fabric",
+        "power bi",
+        "dataflow gen2",
+        "kql"
+      ],
+      "agent": ".github/agents/platform.fabric-architect.agent.md",
+      "kb": [
+        ".github/kb/microsoft-fabric/index.md"
+      ],
+      "kb_full": ".github/kb/microsoft-fabric/",
+      "category": "platform"
+    },
+    {
+      "id": "medallion-architect",
+      "triggers": [
+        "medallion",
+        "bronze",
+        "silver",
+        "gold",
+        "camadas",
+        "layer"
+      ],
+      "agent": ".github/agents/architect.medallion-architect.agent.md",
+      "kb": [
+        ".github/kb/medallion/index.md"
+      ],
+      "kb_full": ".github/kb/medallion/",
+      "category": "architect"
+    },
+    {
+      "id": "schema-designer",
+      "triggers": [
+        "schema",
+        "star schema",
+        "data vault",
+        "dimensional",
+        "scd",
+        "normaliz"
+      ],
+      "agent": ".github/agents/architect.schema-designer.agent.md",
+      "kb": [
+        ".github/kb/data-modeling/index.md"
+      ],
+      "kb_full": ".github/kb/data-modeling/",
+      "category": "architect"
+    },
+    {
+      "id": "data-quality-analyst",
+      "triggers": [
+        "data quality",
+        "data contract",
+        "great expectations",
+        "soda",
+        "validat"
+      ],
+      "agent": ".github/agents/test.data-quality-analyst.agent.md",
+      "kb": [
+        ".github/kb/data-quality/index.md"
+      ],
+      "kb_full": ".github/kb/data-quality/",
+      "category": "test"
+    },
+    {
+      "id": "streaming-engineer",
+      "triggers": [
+        "kafka",
+        "flink",
+        "streaming",
+        "cdc",
+        "change data capture",
+        "kinesis"
+      ],
+      "agent": ".github/agents/data-engineering.streaming-engineer.agent.md",
+      "kb": [
+        ".github/kb/streaming/index.md"
+      ],
+      "kb_full": ".github/kb/streaming/",
+      "category": "data-engineering"
+    },
+    {
+      "id": "airflow-specialist",
+      "triggers": [
+        "airflow",
+        "dag",
+        "operator",
+        "sensor",
+        "task",
+        "orchestr"
+      ],
+      "agent": ".github/agents/data-engineering.airflow-specialist.agent.md",
+      "kb": [
+        ".github/kb/airflow/index.md"
+      ],
+      "kb_full": ".github/kb/airflow/",
+      "category": "data-engineering"
+    },
+    {
+      "id": "gcp-data-architect",
+      "triggers": [
+        "bigquery",
+        "cloud run",
+        "gcs",
+        "pubsub",
+        "gcp",
+        "google cloud"
+      ],
+      "agent": ".github/agents/cloud.gcp-data-architect.agent.md",
+      "kb": [
+        ".github/kb/gcp/index.md"
+      ],
+      "kb_full": ".github/kb/gcp/",
+      "category": "cloud"
+    },
+    {
+      "id": "aws-data-architect",
+      "triggers": [
+        "lambda",
+        "s3",
+        "glue",
+        "aws",
+        "sam",
+        "iam",
+        "dynamodb"
+      ],
+      "agent": ".github/agents/cloud.aws-data-architect.agent.md",
+      "kb": [
+        ".github/kb/aws/index.md"
+      ],
+      "kb_full": ".github/kb/aws/",
+      "category": "cloud"
+    },
+    {
+      "id": "python-developer",
+      "triggers": [
+        "python",
+        "pydantic",
+        "dataclass",
+        "type hint",
+        "context manager",
+        "generator"
+      ],
+      "agent": ".github/agents/python.python-developer.agent.md",
+      "kb": [
+        ".github/kb/python/index.md"
+      ],
+      "kb_full": ".github/kb/python/",
+      "category": "python"
+    },
+    {
+      "id": "sql-optimizer",
+      "triggers": [
+        "sql",
+        "query",
+        "cte",
+        "window function",
+        "dedup",
+        "pivot",
+        "cross dialect"
+      ],
+      "agent": ".github/agents/data-engineering.sql-optimizer.agent.md",
+      "kb": [
+        ".github/kb/sql-patterns/index.md"
+      ],
+      "kb_full": ".github/kb/sql-patterns/",
+      "category": "data-engineering"
+    },
+        {
+            "id": "genai-architect",
+            "triggers": [
+                "rag",
+        "llm",
+        "embedding",
+        "vector",
+        "multi-agent",
+        "langchain",
+        "tool calling"
+      ],
+      "agent": ".github/agents/architect.genai-architect.agent.md",
+      "kb": [
+        ".github/kb/genai/index.md"
+      ],
+            "kb_full": ".github/kb/genai/",
+            "category": "architect"
+        },
+        {
+            "id": "kb-architect",
+            "triggers": [
+                "knowledge",
+                "knowledge base",
+                "kb",
+                "quick-reference",
+                "create-kb",
+                "update-kb",
+                "refresh-stale-kbs"
+            ],
+            "agent": ".github/agents/architect.kb-architect.agent.md",
+            "kb": [],
+            "category": "architect"
+        },
+    {
+      "id": "terraform-specialist",
+      "triggers": [
+        "terraform",
+        "iac",
+        "infrastructure as code",
+        "module",
+        "provider",
+        "state"
+      ],
+      "agent": ".github/agents/cloud.ci-cd-specialist.agent.md",
+      "kb": [
+        ".github/kb/terraform/index.md"
+      ],
+      "kb_full": ".github/kb/terraform/",
+      "category": "cloud"
+    },
+    {
+      "id": "container-specialist",
+      "triggers": [
+        "docker",
+        "dockerfile",
+        "docker compose",
+        "docker-compose",
+        "compose",
+        "container",
+        "kubernetes",
+        "k8s",
+        "helm",
+        "chart"
+      ],
+      "agent": ".github/agents/cloud.container-specialist.agent.md",
+      "kb": [
+        ".github/kb/containers/quick-reference.md"
+      ],
+      "kb_full": ".github/kb/containers/",
+      "category": "cloud"
+    },
+    {
+      "id": "brainstorm-agent",
+      "triggers": [
+        "brainstorm",
+        "ideias",
+        "explorar",
+        "descobrir",
+        "fase 0"
+      ],
+      "agent": ".github/agents/workflow.brainstorm-agent.agent.md",
+      "kb": [],
+      "category": "workflow"
+    },
+    {
+      "id": "define-agent",
+      "triggers": [
+        "define",
+        "definir",
+        "requisitos",
+        "escopo",
+        "fase 1"
+      ],
+      "agent": ".github/agents/workflow.define-agent.agent.md",
+      "kb": [],
+      "category": "workflow"
+    },
+    {
+      "id": "design-agent",
+      "triggers": [
+        "design",
+        "arquitetura",
+        "diagrama",
+        "plano técnico",
+        "fase 2"
+      ],
+      "agent": ".github/agents/workflow.design-agent.agent.md",
+      "kb": [],
+      "category": "workflow"
+    },
+    {
+      "id": "build-agent",
+      "triggers": [
+        "build",
+        "implementar",
+        "construir",
+        "código",
+        "fase 3"
+      ],
+      "agent": ".github/agents/workflow.build-agent.agent.md",
+      "kb": [],
+      "category": "workflow"
+    },
+    {
+      "id": "validate-agent",
+      "triggers": [
+        "validate",
+        "validar",
+        "validation",
+        "quality gate",
+        "phase 3.5",
+        "fase 3.5",
+        "pre-ship"
+      ],
+      "agent": ".github/agents/workflow.validate-agent.agent.md",
+      "kb": [],
+      "category": "workflow"
+    },
+    {
+      "id": "ship-agent",
+      "triggers": [
+        "ship",
+        "deploy",
+        "entregar",
+        "pr",
+        "fase 4",
+        "phase 4"
+      ],
+      "agent": ".github/agents/workflow.ship-agent.agent.md",
+      "kb": [],
+      "category": "workflow"
+    },
+    {
+      "id": "judge",
+      "triggers": [
+        "judge",
+        "review",
+        "julgar",
+        "ambíguo",
+        "conflito",
+        "múltiplos agentes",
+        "qual agente"
+      ],
+      "agent": ".github/agents/dev.judge-agent.agent.md",
+      "kb": [],
+      "category": "dev"
+    },
+    {
+      "id": "the-planner",
+      "triggers": [
+        "planejar",
+        "plano",
+        "quebrar tarefa",
+        "large task",
+        "agent assignment"
+      ],
+      "agent": ".github/agents/architect.the-planner.agent.md",
+      "kb": [],
+      "category": "architect"
+    }
+  ]
+}

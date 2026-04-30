@@ -1,0 +1,38 @@
+{
+  "skill": "knowledge-commands",
+  "priority": "medium",
+  "commands": {
+    "/create-kb": {
+      "file": "commands/create-kb.md",
+      "agent": ".github/agents/architect.kb-architect.agent.md",
+      "kb": ["_templates"],
+      "input": "Domain name and optional source/topics",
+      "output": ".github/kb/{domain}/ with index.md, quick-reference.md, concepts/, patterns/, specs/"
+    },
+    "/update-kb": {
+      "file": "commands/update-kb.md",
+      "agent": ".github/agents/architect.kb-architect.agent.md",
+      "kb": ["_templates"],
+      "input": "Domain name and optional topic/source/since filters",
+      "output": "Updated KB files with refreshed MCP validation dates"
+    },
+    "/refresh-stale-kbs": {
+      "file": "commands/refresh-stale-kbs.md",
+      "agent": ".github/agents/architect.kb-architect.agent.md",
+      "kb": ["_templates"],
+      "input": "Optional max-age parameter",
+      "output": "Audit report + updated stale KB domains"
+    }
+  },
+  "conditions": [
+    "User invokes /knowledge-commands",
+    "KB creation, update, or audit requested",
+    "Knowledge base domain referenced"
+  ],
+  "dependencies": [
+    ".github/config/grounding.md",
+    ".github/config/routing.json",
+    ".github/kb/_index.yaml",
+    ".github/kb/_templates/"
+  ]
+}

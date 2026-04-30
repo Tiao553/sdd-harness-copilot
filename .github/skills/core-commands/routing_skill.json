@@ -1,0 +1,52 @@
+{
+  "skill": "core-commands",
+  "priority": "medium",
+  "commands": {
+    "/meeting": {
+      "file": "commands/meeting.md",
+      "agent": ".github/agents/dev.meeting-analyst.agent.md",
+      "kb": [],
+      "input": "Meeting transcript or notes file",
+      "output": "Structured meeting summary with decisions, actions, questions"
+    },
+    "/memory": {
+      "file": "commands/memory.md",
+      "agent": ".github/agents/dev.codebase-explorer.agent.md",
+      "kb": [],
+      "input": "Memory query or update request",
+      "output": "Updated .github/storage/memory/ files"
+    },
+    "/readme-maker": {
+      "file": "commands/readme-maker.md",
+      "agent": ".github/agents/dev.codebase-explorer.agent.md",
+      "kb": [],
+      "input": "Repository or project context",
+      "output": "Generated or updated README.md"
+    },
+    "/status": {
+      "file": "commands/status.md",
+      "agent": ".github/agents/dev.codebase-explorer.agent.md",
+      "kb": [],
+      "input": "Project path or repository",
+      "output": "Project health report"
+    },
+    "/sync-context": {
+      "file": "commands/sync-context.md",
+      "agent": ".github/agents/dev.codebase-explorer.agent.md",
+      "kb": [],
+      "input": "Session context or _meta/ files",
+      "output": "Synchronized context state"
+    }
+  },
+  "conditions": [
+    "User invokes /core-commands",
+    "Meeting transcript or notes referenced",
+    "README generation or update requested",
+    "Project status query",
+    "Context synchronization request"
+  ],
+  "dependencies": [
+    ".github/config/grounding.md",
+    ".github/config/routing.json"
+  ]
+}

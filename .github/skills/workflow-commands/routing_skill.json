@@ -1,0 +1,72 @@
+{
+  "skill": "workflow-commands",
+  "priority": "high",
+  "commands": {
+    "/brainstorm": {
+      "file": "commands/brainstorm.md",
+      "agent": ".github/agents/workflow.brainstorm-agent.agent.md",
+      "kb": [],
+      "input": "Idea, problem statement, or notes",
+      "output": "BRAINSTORM_{FEATURE}.md"
+    },
+    "/define": {
+      "file": "commands/define.md",
+      "agent": ".github/agents/workflow.define-agent.agent.md",
+      "kb": [],
+      "input": "BRAINSTORM_{FEATURE}.md or direct input",
+      "output": "DEFINE_{FEATURE}.md"
+    },
+    "/design": {
+      "file": "commands/design.md",
+      "agent": ".github/agents/workflow.design-agent.agent.md",
+      "kb": [],
+      "input": "DEFINE_{FEATURE}.md",
+      "output": "DESIGN_{FEATURE}.md"
+    },
+    "/build": {
+      "file": "commands/build.md",
+      "agent": ".github/agents/workflow.build-agent.agent.md",
+      "kb": [],
+      "input": "DESIGN_{FEATURE}.md",
+      "output": "Code in ./projects/{feature-name}/ + BUILD_REPORT_{FEATURE}.md"
+    },
+    "/validate": {
+      "file": "commands/validate.md",
+      "agent": ".github/agents/workflow.validate-agent.agent.md",
+      "kb": [],
+      "input": "DEFINE, DESIGN, BUILD_REPORT, code in projects/",
+      "output": "VALIDATION_REPORT_{FEATURE}.md + RUNBOOK or ROADMAP"
+    },
+    "/ship": {
+      "file": "commands/ship.md",
+      "agent": ".github/agents/workflow.ship-agent.agent.md",
+      "kb": [],
+      "input": "All SDD artifacts + VALIDATION_REPORT approved",
+      "output": "SHIPPED_{DATE}.md in .github/sdd/archive/"
+    },
+    "/iterate": {
+      "file": "commands/iterate.md",
+      "agent": ".github/agents/workflow.iterate-agent.agent.md",
+      "kb": [],
+      "input": "Existing BRAINSTORM, DEFINE, or DESIGN",
+      "output": "Updated artifact with revision history"
+    },
+    "/create-pr": {
+      "file": "commands/create-pr.md",
+      "agent": null,
+      "kb": [],
+      "input": "Completed build or iteration",
+      "output": "GitHub Pull Request"
+    }
+  },
+  "conditions": [
+    "User explicitly invokes /workflow-commands",
+    "SDD phase keywords detected",
+    "DESIGN or DEFINE file referenced"
+  ],
+  "dependencies": [
+    ".github/sdd/architecture/WORKFLOW_CONTRACTS.yaml",
+    ".github/config/grounding.md",
+    ".github/config/routing.json"
+  ]
+}

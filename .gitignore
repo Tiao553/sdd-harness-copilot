@@ -58,6 +58,12 @@ coverage.xml
 # PBI Output
 output/
 
+# SDD workflow artifacts (keep only .gitkeep)
+.github/sdd/features/*
+!.github/sdd/features/.gitkeep
+.github/sdd/_archive/*
+!.github/sdd/_archive/.gitkeep
+
 # IDE
 .vscode/
 .idea/

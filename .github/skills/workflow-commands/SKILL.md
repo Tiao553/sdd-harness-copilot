@@ -137,3 +137,20 @@ Cada especialista delegado deve:
 3. Cumprir quality gates do agente
 4. Registrar evidência no `BUILD_REPORT_{FEATURE}.md`
 5. Escrever arquivos em `./projects/{feature-name}/`
+
+### Validação (Phase 3.5)
+
+`/validate` usa 4 juntas hierárquicas Copilot-nativas (sem dependências externas):
+
+| Junta | Tipo | Personas | Output |
+|-------|------|----------|--------|
+| SpecCrew | Paralela | MGR, ARC, ENG, SWE | `01_SPEC_REPORT.json` |
+| CodeCrew | Paralela | MGR, SWE, ENG, OPS | `02_CODE_REPORT.json` |
+| DeliveryCrew | Sequencial | CMP, GAP | `03_DELIVERY_DELTA.json` |
+| CouncilCrew | Sequencial | JDG, RPT, PRD | `04_COUNCIL_VERDICT.json` |
+
+Scoring é **determinístico** (sem LLM): `score = alignment×0.30 + quality×0.25 + architecture×0.20 + devops×0.15 + delta×0.10`
+
+Contrato canônico: `.github/sdd/architecture/VALIDATE_JUNTAS_CONTRACT.yaml`
+Prompts das juntas: `.github/skills/workflow-commands/references/*.md`
+Renderer: `.github/skills/workflow-commands/scripts/render.py`

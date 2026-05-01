@@ -150,26 +150,41 @@ flowchart LR
 +-- _index.md                    # This file (workflow overview)
 +-- README.md                    # Comprehensive documentation
 +-- features/                    # Active feature documents
-|   +-- BRAINSTORM_{FEATURE}.md
-|   +-- DEFINE_{FEATURE}.md
-|   +-- DESIGN_{FEATURE}.md
-+-- reports/                     # Build reports
-|   +-- BUILD_REPORT_{FEATURE}.md
+|   +-- {feature-name}/
+|       +-- BRAINSTORM_{FEATURE}.md
+|       +-- DEFINE_{FEATURE}.md
+|       +-- DESIGN_{FEATURE}.md
+|       +-- BUILD_REPORT_{FEATURE}.md
+|       +-- VALIDATION_REPORT_{FEATURE}.md
+|       +-- RUNBOOK_{FEATURE}.md         (if score >= 90)
+|       +-- ROADMAP_{FEATURE}.md         (if score 70-89)
+|       +-- _validate/                   # Intermediate junta outputs
+|           +-- 01_SPEC_REPORT_{FEATURE}.json
+|           +-- 02_CODE_REPORT_{FEATURE}.json
+|           +-- 03_DELIVERY_DELTA_{FEATURE}.json
+|           +-- 04_COUNCIL_VERDICT_{FEATURE}.json
+|           +-- 05_SCORING_{FEATURE}.json
 +-- archive/                     # Shipped features
-|   +-- {FEATURE}/
+|   +-- {feature-name}/
 |       +-- BRAINSTORM_{FEATURE}.md  (if used)
 |       +-- DEFINE_{FEATURE}.md
 |       +-- DESIGN_{FEATURE}.md
 |       +-- BUILD_REPORT_{FEATURE}.md
+|       +-- VALIDATION_REPORT_{FEATURE}.md
+|       +-- RUNBOOK_{FEATURE}.md
 |       +-- SHIPPED_{DATE}.md
 +-- templates/                   # Document templates
 |   +-- BRAINSTORM_TEMPLATE.md
 |   +-- DEFINE_TEMPLATE.md
 |   +-- DESIGN_TEMPLATE.md
 |   +-- BUILD_REPORT_TEMPLATE.md
+|   +-- VALIDATION_REPORT_TEMPLATE.md
+|   +-- RUNBOOK_TEMPLATE.md
+|   +-- ROADMAP_TEMPLATE.md
 |   +-- SHIPPED_TEMPLATE.md
 +-- architecture/                # Workflow contracts
     +-- WORKFLOW_CONTRACTS.yaml
+    +-- VALIDATE_JUNTAS_CONTRACT.yaml
     +-- ARCHITECTURE.md
 ```
 
@@ -280,6 +295,7 @@ flowchart LR
 | Define | Opus | Nuanced understanding of requirements |
 | Design | Opus | Architectural decisions require depth |
 | Build | Sonnet | Fast, accurate code generation |
+| Validate | Sonnet | 4 juntas via task tool, deterministic scoring |
 | Ship | Haiku | Simple archival operations |
 | Iterate | Sonnet | Balanced speed and understanding |
 
@@ -289,13 +305,16 @@ flowchart LR
 
 | Resource | Location |
 |----------|----------|
-| SDD Commands | `.github/commands/workflow/` |
-| DE Commands | `.github/commands/data-engineering/` |
-| Core Commands | `.github/commands/core/` |
+| SDD Commands | `.github/skills/workflow-commands/commands/` |
+| DE Commands | `.github/skills/data-engineering-commands/commands/` |
+| Core Commands | `.github/skills/core-commands/commands/` |
 | Agents (62 + DEFAULT) | `.github/agents/` |
 | KB Domains (26) | `.github/kb/` |
 | Templates | `.github/sdd/templates/` |
-| Contracts | `.github/sdd/architecture/WORKFLOW_CONTRACTS.yaml` |
+| Workflow Contract | `.github/sdd/architecture/WORKFLOW_CONTRACTS.yaml` |
+| Validate Juntas Contract | `.github/sdd/architecture/VALIDATE_JUNTAS_CONTRACT.yaml` |
+| Junta Prompts | `.github/skills/workflow-commands/references/` |
+| Template Renderer | `.github/skills/workflow-commands/scripts/render.py` |
 
 ---
 

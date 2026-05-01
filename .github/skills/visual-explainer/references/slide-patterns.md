@@ -623,89 +623,145 @@ Asymmetric two-panel (60/40 or 70/30). Before/after, text+diagram, text+image. E
 
 ### Diagram Slide
 
-Full-viewport Mermaid diagram. Max 8–10 nodes (presentation scale — fewer, larger than page diagrams). Node labels at 18px+, edges at 2px+. Zoom controls from `css-patterns.md` apply here.
+Full-viewport flow diagrams using pure HTML/CSS/SVG. **No Mermaid in slides** — Mermaid renders SVGs at a fixed size the agent can't control, producing tiny diagrams with acres of dead space in 100dvh slides. Use the SVG Flow Diagram pattern below instead.
 
-**When to use Mermaid vs CSS in slides.** Mermaid renders SVGs at a fixed size the agent can't control — node dimensions are set by the library, not by CSS. This creates a recurring problem: small diagrams (fewer than ~7 nodes, no branching) render as tiny elements floating in a huge viewport with acres of dead space. The rule:
+**When to use which approach:**
 
-- **Use Mermaid** for complex graphs: 8+ nodes, branching paths, cycles, multiple edge crossings — anything where automatic edge routing saves real effort.
-- **Use CSS Pipeline** (below) for simple linear flows: A → B → C → D sequences, build steps, deployment stages. CSS cards give full control over sizing, typography, and fill the viewport naturally.
-- **Never leave a small Mermaid diagram alone on a slide.** If the diagram is small, either switch to CSS, or pair it with supporting content (description cards, bullet annotations, a summary panel) in a split layout. A slide with a tiny diagram and empty space is a failed slide.
+- **SVG Flow Diagram** (default for slides) — CSS Grid cards connected by inline SVG `<path>` elements with animated dashes, gradient strokes, and glow filters. Gives full control over sizing, fills the viewport naturally, and matches the deck's palette. Use for any flowchart, pipeline, decision tree, or architecture diagram in a slide.
+- **CSS Pipeline** (below) — For simple horizontal linear flows (A → B → C → D). Flex cards with arrow connectors.
+- **Mermaid** — Forbidden in slides. Still available for scrollable pages where viewport filling is not critical.
 
-**Mermaid centering fix.** When you do use Mermaid, add `display: flex; align-items: center; justify-content: center;` to `.mermaid-wrap` so the SVG centers within its container instead of hugging the top-left corner. Change `transform-origin` to `center center` so zoom radiates from the middle.
+#### SVG Flow Diagram Pattern
+
+The flow diagram uses three layers:
+
+1. **SVG defs block** — Define arrow markers, gradient strokes, and glow filters once in a hidden `<svg>` at the top of `<body>`. These are referenced by flow line paths throughout the deck.
+2. **CSS Grid cards** — Flow nodes rendered as styled cards with colored borders, monospace labels, and descriptions. Positioned explicitly in a CSS Grid.
+3. **Inline SVG paths** — Connecting lines drawn as `<svg>` overlays with animated stroke-dasharray, gradient strokes, and optional glow filters.
+
+**Layout direction: prefer left-to-right (LR).** Horizontal flows read naturally on widescreen slides and use the viewport width efficiently. Use a wide `viewBox` aspect ratio (e.g., `viewBox="0 0 940 280"` for ~3.4:1) to fill the slide. Vertical (top-down) layouts waste horizontal space — only use TD for very simple 3-node linear flows or when vertical hierarchy is semantically essential.
+
+**Arrow gap rule.** Arrows must never enter or overlap elements. Start every connecting line/path **3px after** the source element's edge and end **3px before** the target element's edge. The arrowhead marker tip will fill the remaining gap without overlapping the target border. For curved branch paths using cubic Bézier (`C`), ensure the endpoint tangent direction is horizontal so the arrowhead points right.
+
+**Gradient direction.** Use horizontal gradients (`x1="0" y1="0" x2="1" y2="0"`) for LR flows so the color transitions follow the flow direction left-to-right.
+
+**SVG Defs Block** (place once before `<div class="deck">`):
+
+```html
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ah" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="var(--text-dim)"/>
+    </marker>
+    <marker id="ah-accent" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="var(--accent)"/>
+    </marker>
+    <linearGradient id="flow-grad-lr" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="var(--teal)" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+</svg>
+```
+
+**Flow Animation CSS:**
+
+```css
+@keyframes flow-dash { to { stroke-dashoffset: -20; } }
+.flow-line { stroke-dasharray: 10 10; animation: flow-dash 1.2s linear infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(8,145,178,0.12); }
+  50% { box-shadow: 0 0 25px rgba(8,145,178,0.25); }
+}
+```
+
+**Flow Card CSS:**
+
+```css
+.flow-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: clamp(14px, 2vh, 24px) clamp(16px, 2vw, 28px);
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.flow-card:hover {
+  transform: translateY(-2px);
+}
+.flow-card__title {
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.flow-card__desc {
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin-top: 0.3rem;
+}
+```
+
+**Example — Horizontal Flow (LR) with Decision Branch:**
 
 ```html
 <section class="slide slide--diagram">
-  <h2 class="slide__heading reveal">Diagram Title</h2>
-  <div class="mermaid-wrap reveal" style="flex:1; min-height:0;">
-    <div class="zoom-controls">
-      <button onclick="zoomDiagram(this,1.2)" title="Zoom in">+</button>
-      <button onclick="zoomDiagram(this,0.8)" title="Zoom out">&minus;</button>
-      <button onclick="resetZoom(this)" title="Reset">&#8634;</button>
-      <button onclick="openDiagramFullscreen(this)" title="Open full size in new tab">&#x26F6;</button>
-    </div>
-    <pre class="mermaid">
-      graph TD
-        A --> B
-    </pre>
+  <h2 class="slide__heading reveal">Flow Title</h2>
+  <div class="reveal" style="flex:1; display:flex; align-items:center; justify-content:center; min-height:0;">
+    <svg viewBox="0 0 700 200" style="width:100%; max-height:100%; max-width:clamp(500px,80vw,740px);">
+
+      <!-- Node A (left) — rect ends at x=120 -->
+      <rect x="0" y="77" width="120" height="46" rx="12" fill="rgba(8,145,178,0.1)" stroke="#0891b2" stroke-width="2"/>
+      <text x="60" y="105" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#d8e8f4">Step A</text>
+
+      <!-- Arrow A→B: starts 3px after A right edge, ends 3px before B left edge -->
+      <line x1="123" y1="100" x2="177" y2="100" stroke="url(#grad-accent-teal)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-teal)"/>
+
+      <!-- Node B: Decision — x=180..300 -->
+      <rect x="180" y="77" width="120" height="46" rx="14" fill="rgba(20,184,166,0.12)" stroke="#14b8a6" stroke-width="2"/>
+      <text x="240" y="105" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#d8e8f4">Decision?</text>
+
+      <!-- Branch SIM (up-right curve) — ends 3px before Option 1 left edge -->
+      <path d="M303,88 C320,88 328,40 347,40" stroke="#14b8a6" stroke-width="2" fill="none" class="flow-line" marker-end="url(#ah-teal)"/>
+      <text x="330" y="58" font-family="'Fira Code',monospace" font-size="9" fill="#14b8a6" font-weight="700">SIM</text>
+
+      <!-- Option 1 (top row) — x=350..480 -->
+      <rect x="350" y="17" width="130" height="46" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8"/>
+      <text x="415" y="45" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#d8e8f4">Option 1</text>
+
+      <!-- Branch NÃO (down-right curve) -->
+      <path d="M303,112 C320,112 328,160 347,160" stroke="#14b8a6" stroke-width="2" fill="none" class="flow-line" marker-end="url(#ah-teal)"/>
+      <text x="330" y="145" font-family="'Fira Code',monospace" font-size="9" fill="#14b8a6" font-weight="700">NÃO</text>
+
+      <!-- Option 2 (bottom row) — x=350..480 -->
+      <rect x="350" y="137" width="130" height="46" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8"/>
+      <text x="415" y="165" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#d8e8f4">Option 2</text>
+
+      <!-- Converge both → merge point at x=510 -->
+      <path d="M483,40 L510,40 L510,100" stroke="url(#grad-teal-green)" stroke-width="2" fill="none" class="flow-line"/>
+      <path d="M483,160 L510,160 L510,100" stroke="url(#grad-teal-green)" stroke-width="2" fill="none" class="flow-line"/>
+
+      <!-- Merge → Result: 3px gap before result left edge -->
+      <line x1="512" y1="100" x2="537" y2="100" stroke="url(#grad-teal-green)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-green)"/>
+
+      <!-- Node C: Result — x=540..700 -->
+      <rect x="540" y="77" width="160" height="46" rx="12" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+      <text x="620" y="105" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#d8e8f4">Result</text>
+    </svg>
   </div>
 </section>
 ```
 
-**Click to expand.** Clicking anywhere on the diagram (without dragging) opens it full-size in a new browser tab. The expand button (⛶) provides the same functionality for discoverability.
-
-```css
-.slide--diagram {
-  padding: clamp(24px, 4vh, 48px) clamp(24px, 4vw, 60px);
-}
-
-.slide--diagram .slide__heading {
-  margin-bottom: clamp(8px, 1.5vh, 20px);
-}
-
-.slide--diagram .mermaid-wrap {
-  border-radius: 12px;
-  overflow: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.slide--diagram .mermaid-wrap .mermaid {
-  transform-origin: center center;
-}
-```
-
-**Auto-fit SVG to container.** Mermaid renders SVGs with fixed dimensions and an inline `max-width` style that keeps diagrams tiny inside large slides. The `autoFit()` function (see above) handles this at runtime. Keep the CSS as a belt-and-suspenders fallback:
-
-```css
-.slide--diagram .mermaid svg {
-  width: 100% !important;
-  height: auto !important;
-  max-width: 100% !important;
-}
-```
-
-**Mermaid overrides for presentation scale** (add alongside the standard Mermaid CSS overrides from `libraries.md`):
-
-```css
-.slide--diagram .mermaid .nodeLabel {
-  font-size: 18px !important;
-}
-
-.slide--diagram .mermaid .edgeLabel {
-  font-size: 14px !important;
-}
-
-.slide--diagram .mermaid .node rect,
-.slide--diagram .mermaid .node circle,
-.slide--diagram .mermaid .node polygon {
-  stroke-width: 2px;
-}
-
-.slide--diagram .mermaid .edge-pattern-solid {
-  stroke-width: 2px;
-}
-```
+**Tips for complex flows:**
+- **LR branching:** Use cubic Bézier curves (`C`) for branch paths — start horizontal from the source, curve vertically, end horizontal at the target. This ensures arrowheads point correctly.
+- **Converge pattern:** Both branches draw L-shaped paths to a shared merge x-coordinate, then a short horizontal arrow continues to the next node.
+- **Arrow gaps:** Always leave 3px between line endpoints and element borders. The arrowhead marker tip fills ~1px of that gap, leaving clean separation.
+- For parallel branches: stack options vertically (top row / bottom row) with the main flow line in the center.
+- Add `filter="url(#glow)"` to highlight key decision nodes.
+- Color-code cards by type: input=accent, routing=teal, processing=green, error=red, output=amber
 
 ### CSS Pipeline Slide
 

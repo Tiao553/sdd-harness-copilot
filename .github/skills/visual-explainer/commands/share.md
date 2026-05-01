@@ -19,7 +19,7 @@ Share a visual explainer HTML file instantly via Vercel. Returns a live URL with
 
 **Examples:**
 ```
-/share ~/.agent/diagrams/my-diagram.html
+/share presentations/my-diagram.html
 /share /tmp/visual-explainer-output.html
 ```
 

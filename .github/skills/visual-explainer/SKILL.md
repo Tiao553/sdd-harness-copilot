@@ -191,11 +191,12 @@ Keep animations purposeful: entrance reveals, hover feedback, and user-initiated
 
 ### 4. Deliver
 
-**Output location:** Write to `~/.agent/diagrams/`. Use a descriptive filename based on content: `modem-architecture.html`, `pipeline-flow.html`, `schema-overview.html`. The directory persists across sessions.
+**Output location:** Write to `presentations/` in the project root. Use a descriptive filename based on content: `modem-architecture.html`, `pipeline-flow.html`, `schema-overview.html`. Create the directory if it doesn't exist.
 
 **Open in browser:**
-- macOS: `open ~/.agent/diagrams/filename.html`
-- Linux: `xdg-open ~/.agent/diagrams/filename.html`
+- macOS: `open presentations/filename.html`
+- Linux: `xdg-open presentations/filename.html`
+- Windows: `Start-Process presentations/filename.html`
 
 **Tell the user** the file path so they can re-open or share it.
 
@@ -327,7 +328,9 @@ An alternative output format for presenting content as a magazine-quality slide 
 
 **Slide types (10):** Title, Section Divider, Content, Split, Diagram, Dashboard, Table, Code, Quote, Full-Bleed. Each has a defined layout in `slide-patterns.md`. Content that exceeds a slide's density limit splits across multiple slides — never scrolls within a slide.
 
-**Visual richness:** Check `which surf` at the start. If surf-cli is available, generate 2–4 images (title slide background, full-bleed background, optional content illustrations) before writing HTML — see the Proactive Imagery section in `slide-patterns.md` for the workflow. Also use SVG decorative accents, per-slide background gradients, inline sparklines, and small Mermaid diagrams. Visual-first, text-second.
+**No Mermaid in slides.** Slide decks must NOT use Mermaid.js for diagrams. Mermaid renders SVGs at a fixed size the agent can't control — in 100dvh slides, diagrams appear tiny with acres of dead space around them. Instead, use pure HTML/CSS/SVG flow diagrams: CSS Grid cards with inline SVG animated flow lines (`stroke-dasharray` + `@keyframes`), gradient strokes, and glow filters. This produces magazine-quality visuals that fill the viewport and match the deck's palette perfectly. See the "SVG Flow Diagram" pattern in `slide-patterns.md`. Mermaid remains available for scrollable pages — just not slides.
+
+**Visual richness:** Check `which surf` at the start. If surf-cli is available, generate 2–4 images (title slide background, full-bleed background, optional content illustrations) before writing HTML — see the Proactive Imagery section in `slide-patterns.md` for the workflow. Also use SVG decorative accents, per-slide background gradients, inline sparklines, and HTML/CSS flow diagrams. Visual-first, text-second.
 
 **Compositional variety:** Consecutive slides must vary spatial approach — centered, left-heavy, right-heavy, split, edge-aligned, full-bleed. Three centered slides in a row means push one off-axis.
 
@@ -370,7 +373,7 @@ bash .github/skills/visual-explainer/scripts/share.sh <html-file>
 
 **Example:**
 ```bash
-bash .github/skills/visual-explainer/scripts/share.sh ~/.agent/diagrams/my-diagram.html
+bash .github/skills/visual-explainer/scripts/share.sh presentations/my-diagram.html
 
 # Output:
 # ✓ Shared successfully!

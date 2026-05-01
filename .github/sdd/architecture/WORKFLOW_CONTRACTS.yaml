@@ -487,11 +487,11 @@ build:
 validate:
   command:
     name: "/validate"
-    file: ".github/skills/validate/SKILL.md"
+    file: ".github/skills/workflow-commands/commands/validate.md"
     args: "<build-report-or-feature-name>"
     examples:
-    - "/workflow-commands /validate .github/sdd/features/user-notifications/BUILD_REPORT_USER_NOTIFICATIONS.md"
-    - "/workflow-commands /validate USER_NOTIFICATIONS"
+    - "/workflow-commands /validate .github/sdd/features/bronze-silver/BUILD_REPORT_BRONZE_SILVER.md"
+    - "/workflow-commands /validate BRONZE_SILVER"
 
   agent:
     name: "validate-agent"
@@ -500,7 +500,32 @@ validate:
     tools:
     - Read
     - Write
-    - Bash
+    - task
+    - shell
+
+  juntas:
+    contract: ".github/sdd/architecture/VALIDATE_JUNTAS_CONTRACT.yaml"
+    execution:
+      phase_1_parallel:
+        - name: "spec"
+          prompt: ".github/skills/workflow-commands/references/spec-junta.md"
+          output: "01_SPEC_REPORT_{FEATURE}.json"
+        - name: "code"
+          prompt: ".github/skills/workflow-commands/references/code-junta.md"
+          output: "02_CODE_REPORT_{FEATURE}.json"
+      phase_2_sequential:
+        - name: "delivery"
+          prompt: ".github/skills/workflow-commands/references/delivery-junta.md"
+          output: "03_DELIVERY_DELTA_{FEATURE}.json"
+      phase_3_deterministic:
+        - name: "scoring"
+          output: "05_SCORING_{FEATURE}.json"
+      phase_4_narrative:
+        - name: "council"
+          prompt: ".github/skills/workflow-commands/references/council-junta.md"
+          output: "04_COUNCIL_VERDICT_{FEATURE}.json"
+    intermediate_dir: ".github/sdd/features/{feature-name}/_validate/"
+    renderer: ".github/skills/workflow-commands/scripts/render.py"
 
   input:
     required:
@@ -513,6 +538,12 @@ validate:
     validation_report: ".github/sdd/features/{feature-name}/VALIDATION_REPORT_{FEATURE}.md"
     runbook: ".github/sdd/features/{feature-name}/RUNBOOK_{FEATURE}.md"
     roadmap: ".github/sdd/features/{feature-name}/ROADMAP_{FEATURE}.md"
+    intermediate:
+    - ".github/sdd/features/{feature-name}/_validate/01_SPEC_REPORT_{FEATURE}.json"
+    - ".github/sdd/features/{feature-name}/_validate/02_CODE_REPORT_{FEATURE}.json"
+    - ".github/sdd/features/{feature-name}/_validate/03_DELIVERY_DELTA_{FEATURE}.json"
+    - ".github/sdd/features/{feature-name}/_validate/04_COUNCIL_VERDICT_{FEATURE}.json"
+    - ".github/sdd/features/{feature-name}/_validate/05_SCORING_{FEATURE}.json"
     templates:
     - ".github/sdd/templates/VALIDATION_REPORT_TEMPLATE.md"
     - ".github/sdd/templates/RUNBOOK_TEMPLATE.md"

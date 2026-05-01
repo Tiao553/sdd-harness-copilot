@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentSpec — Spec-Driven Development para Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ THEME: Blueprint ============ */
+  :root {
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'Fira Code', 'SF Mono', Consolas, monospace;
+    --bg: #0b1628;
+    --surface: #111e34;
+    --surface2: #162640;
+    --surface-elevated: #1b3050;
+    --border: rgba(100, 180, 220, 0.08);
+    --border-bright: rgba(100, 180, 220, 0.18);
+    --text: #d8e8f4;
+    --text-dim: #7a9ab8;
+    --accent: #0891b2;
+    --accent-bright: #22d3ee;
+    --accent-dim: rgba(8, 145, 178, 0.1);
+    --code-bg: #070e1a;
+    --code-text: #c8dce8;
+    --green: #34d399;
+    --green-dim: rgba(52, 211, 153, 0.1);
+    --red: #fb7185;
+    --red-dim: rgba(251, 113, 133, 0.1);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251, 191, 36, 0.1);
+    --teal: #14b8a6;
+    --teal-dim: rgba(20, 184, 166, 0.1);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface2: #e8f0f6;
+      --surface-elevated: #ffffff;
+      --border: rgba(10, 40, 80, 0.08);
+      --border-bright: rgba(10, 40, 80, 0.15);
+      --text: #0f1d2e;
+      --text-dim: #4a6a88;
+      --accent: #0369a1;
+      --accent-bright: #0891b2;
+      --accent-dim: rgba(3, 105, 161, 0.07);
+      --code-bg: #1a2536;
+      --code-text: #d8e8f4;
+      --green: #059669;
+      --green-dim: rgba(5, 150, 105, 0.07);
+      --red: #e11d48;
+      --red-dim: rgba(225, 29, 72, 0.07);
+      --amber: #d97706;
+      --amber-dim: rgba(217, 119, 6, 0.07);
+      --teal: #0d9488;
+      --teal-dim: rgba(13, 148, 136, 0.07);
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--text);
+    background: var(--bg);
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+    overflow: hidden;
+  }
+
+  /* ============ DECK ENGINE ============ */
+  .deck {
+    height: 100dvh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slide {
+    height: 100dvh;
+    scroll-snap-align: start;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(40px, 6vh, 80px) clamp(40px, 8vw, 120px);
+    isolation: isolate;
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+    transition:
+      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .slide.visible { opacity: 1; transform: none; }
+
+  .slide .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .slide.visible .reveal { opacity: 1; transform: none; }
+  .slide.visible .reveal:nth-child(1) { transition-delay: 0.1s; }
+  .slide.visible .reveal:nth-child(2) { transition-delay: 0.2s; }
+  .slide.visible .reveal:nth-child(3) { transition-delay: 0.3s; }
+  .slide.visible .reveal:nth-child(4) { transition-delay: 0.4s; }
+  .slide.visible .reveal:nth-child(5) { transition-delay: 0.5s; }
+  .slide.visible .reveal:nth-child(6) { transition-delay: 0.6s; }
+  .slide.visible .reveal:nth-child(7) { transition-delay: 0.7s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide .reveal {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* ============ NAV CHROME ============ */
+  .deck-progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--accent); z-index: 100;
+    transition: width 0.3s ease; pointer-events: none;
+  }
+
+  .deck-dots {
+    position: fixed; right: clamp(12px, 2vw, 24px); top: 50%;
+    transform: translateY(-50%); display: flex; flex-direction: column;
+    gap: 6px; z-index: 100; padding: 8px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent 30%);
+    border-radius: 20px;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  }
+
+  .deck-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-dim); opacity: 0.3; border: none; padding: 0;
+    cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .deck-dot:hover { opacity: 0.6; }
+  .deck-dot.active { opacity: 1; transform: scale(1.5); background: var(--accent); }
+
+  .deck-counter {
+    position: fixed; bottom: clamp(12px, 2vh, 24px); right: clamp(12px, 2vw, 24px);
+    font-family: var(--font-mono); font-size: 12px; color: var(--text-dim);
+    z-index: 100; font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .deck-hints {
+    position: fixed; bottom: clamp(12px, 2vh, 24px); left: 50%;
+    transform: translateX(-50%); font-family: var(--font-mono);
+    font-size: 11px; color: var(--text-dim); opacity: 0.6; z-index: 100;
+    transition: opacity 0.5s ease; white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  .deck-hints.faded { opacity: 0; pointer-events: none; }
+
+  /* ============ SHARED SLIDE ELEMENTS ============ */
+  .slide__display {
+    font-size: clamp(48px, 10vw, 110px);
+    font-weight: 800;
+    letter-spacing: -3px;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  .slide__heading {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .slide__body {
+    font-size: clamp(16px, 2.2vw, 22px);
+    line-height: 1.6;
+    color: var(--text-dim);
+    text-wrap: pretty;
+  }
+
+  .slide__subtitle {
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.5vw, 18px);
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .slide__label {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .slide__decor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ============ SLIDE TYPE: TITLE ============ */
+  .slide--title {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-image: radial-gradient(ellipse at 50% 30%, var(--accent-dim) 0%, transparent 50%);
+  }
+  .slide--title .slide__display { color: var(--accent-bright); }
+
+  /* ============ SLIDE TYPE: DIVIDER ============ */
+  .slide--divider { justify-content: center; }
+  .slide--divider .slide__number {
+    font-size: clamp(100px, 22vw, 260px);
+    font-weight: 200;
+    line-height: 0.85;
+    opacity: 0.06;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+
+  /* ============ SLIDE TYPE: CONTENT ============ */
+  .slide--content .slide__inner {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: clamp(24px, 4vw, 60px);
+    align-items: center;
+    width: 100%;
+  }
+  .slide--content.right-heavy .slide__inner {
+    grid-template-columns: 2fr 3fr;
+  }
+
+  .slide__bullets { list-style: none; padding: 0; }
+  .slide__bullets li {
+    padding: 10px 0 10px 24px;
+    position: relative;
+    font-size: clamp(16px, 2vw, 22px);
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+  .slide__bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 20px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .slide__aside {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  /* ============ SLIDE TYPE: SPLIT ============ */
+  .slide--split { padding: 0; }
+  .slide--split .slide__panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100%;
+  }
+  .slide--split .slide__panel {
+    padding: clamp(40px, 6vh, 80px) clamp(32px, 4vw, 60px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide--split .slide__panel--primary { background: var(--surface); }
+  .slide--split .slide__panel--secondary { background: var(--surface2); }
+
+  /* ============ SLIDE TYPE: DIAGRAM (HTML/CSS/SVG) ============ */
+  .slide--diagram {
+    padding: clamp(24px, 4vh, 48px) clamp(24px, 4vw, 60px);
+  }
+  .slide--diagram .slide__heading { margin-bottom: clamp(8px, 1.5vh, 20px); }
+
+  /* Flow cards */
+  .flow-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: clamp(12px, 1.8vh, 20px) clamp(14px, 2vw, 24px);
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .flow-card:hover { transform: translateY(-2px); }
+  .flow-card__title {
+    font-family: var(--font-mono);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .flow-card__desc {
+    font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+    color: var(--text-dim);
+    line-height: 1.45;
+    margin-top: 0.25rem;
+  }
+
+  /* Flow animations */
+  @keyframes flow-dash { to { stroke-dashoffset: -20; } }
+  .flow-line { stroke-dasharray: 10 10; animation: flow-dash 1.2s linear infinite; }
+
+  @keyframes pulse-accent {
+    0%, 100% { box-shadow: 0 0 15px rgba(8,145,178,0.12), 0 0 30px rgba(8,145,178,0.04); }
+    50% { box-shadow: 0 0 25px rgba(8,145,178,0.25), 0 0 50px rgba(8,145,178,0.08); }
+  }
+  @keyframes pulse-teal {
+    0%, 100% { box-shadow: 0 0 15px rgba(20,184,166,0.12); }
+    50% { box-shadow: 0 0 25px rgba(20,184,166,0.25); }
+  }
+  @keyframes pulse-green-glow {
+    0%, 100% { box-shadow: 0 0 15px rgba(52,211,153,0.12); }
+    50% { box-shadow: 0 0 25px rgba(52,211,153,0.25); }
+  }
+
+  /* ============ SLIDE TYPE: DASHBOARD ============ */
+  .slide--dashboard .slide__kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 20vw, 220px), 1fr));
+    gap: clamp(12px, 2vw, 24px);
+  }
+  .slide__kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: clamp(16px, 3vh, 32px) clamp(16px, 2vw, 24px);
+    min-width: 0;
+    overflow: hidden;
+  }
+  .slide__kpi-val {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .slide__kpi-label {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1.2vw, 13px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .slide__kpi-trend {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  /* ============ SLIDE TYPE: TABLE ============ */
+  .slide--table { padding: clamp(24px, 4vh, 48px) clamp(24px, 4vw, 60px); }
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+  }
+  .table-scroll { overflow-x: auto; }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    background: var(--surface2);
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.3vw, 14px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-align: left;
+    padding: clamp(10px, 1.5vh, 16px) clamp(14px, 2vw, 24px);
+    border-bottom: 2px solid var(--border-bright);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: clamp(10px, 1.5vh, 16px) clamp(14px, 2vw, 24px);
+    border-bottom: 1px solid var(--border);
+    font-size: clamp(14px, 1.8vw, 20px);
+    vertical-align: top;
+  }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:nth-child(even) { background: var(--surface2); }
+  .data-table tbody tr { transition: background 0.15s; }
+  .data-table tbody tr:hover { background: var(--accent-dim); }
+  .data-table code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: var(--accent-dim); color: var(--accent-bright);
+    padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* ============ SLIDE TYPE: CODE ============ */
+  .slide--code { align-items: center; }
+  .slide__code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: clamp(24px, 4vh, 48px) clamp(24px, 4vw, 48px);
+    max-width: 900px;
+    width: 100%;
+    position: relative;
+  }
+  .slide__code-filename {
+    position: absolute;
+    top: -12px; left: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 4px;
+    background: var(--accent); color: var(--bg);
+  }
+  .slide__code-block pre { margin: 0; overflow-x: auto; white-space: pre-wrap; }
+  .slide__code-block code {
+    font-family: var(--font-mono);
+    font-size: clamp(14px, 1.6vw, 18px);
+    line-height: 1.7;
+    color: var(--code-text);
+  }
+  .slide__code-block .hl { color: var(--accent-bright); }
+  .slide__code-block .cm { color: var(--text-dim); }
+
+  /* ============ SLIDE TYPE: QUOTE ============ */
+  .slide--quote {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: clamp(60px, 10vh, 120px) clamp(60px, 12vw, 200px);
+  }
+  .slide__quote-mark {
+    font-size: clamp(80px, 14vw, 180px);
+    line-height: 0.5;
+    opacity: 0.06;
+    font-family: Georgia, serif;
+    pointer-events: none;
+    margin-bottom: -20px;
+    color: var(--accent);
+  }
+  .slide--quote blockquote {
+    font-size: clamp(24px, 4vw, 48px);
+    font-weight: 400;
+    line-height: 1.35;
+    font-style: italic;
+  }
+  .slide--quote cite {
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 1.4vw, 14px);
+    font-style: normal;
+    margin-top: clamp(16px, 3vh, 32px);
+    display: block;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ============ SLIDE TYPE: FULL-BLEED ============ */
+  .slide--bleed { padding: 0; justify-content: flex-end; }
+  .slide__bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    z-index: 0;
+  }
+  .slide__bg--gradient {
+    background: linear-gradient(135deg, #041225 0%, #0b1628 40%, #112840 100%);
+  }
+  .slide__scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 40%, transparent 100%);
+    z-index: 1;
+  }
+  .slide--bleed .slide__content {
+    position: relative; z-index: 2;
+    padding: clamp(40px, 6vh, 80px) clamp(40px, 8vw, 120px);
+    color: #ffffff;
+  }
+  .slide--bleed .slide__heading { color: #ffffff; }
+  .slide--bleed .slide__subtitle { color: rgba(255,255,255,0.7); }
+
+  /* ============ PIPELINE (CSS) ============ */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex: 1;
+    min-height: 0;
+    margin-top: clamp(12px, 2vh, 24px);
+  }
+  .pipeline__step {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: clamp(14px, 2.5vh, 28px) clamp(12px, 1.5vw, 22px);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+  .pipeline__num {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .pipeline__name {
+    font-size: clamp(14px, 1.6vw, 20px);
+    font-weight: 700;
+    margin: clamp(4px, 0.8vh, 8px) 0;
+  }
+  .pipeline__desc {
+    font-size: clamp(11px, 1.1vw, 14px);
+    color: var(--text-dim);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .pipeline__file {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.9vw, 11px);
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: clamp(8px, 1.5vh, 16px);
+    align-self: flex-start;
+  }
+  .pipeline__arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 clamp(2px, 0.3vw, 5px);
+    color: var(--accent);
+    flex-shrink: 0;
+    opacity: 0.4;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-height: 700px) {
+    .slide { padding: clamp(24px, 4vh, 40px) clamp(32px, 6vw, 80px); }
+    .slide__display { font-size: clamp(36px, 8vw, 72px); }
+    .slide--divider .slide__number { font-size: clamp(80px, 16vw, 160px); }
+  }
+  @media (max-height: 500px) {
+    .slide { padding: clamp(16px, 3vh, 24px) clamp(24px, 5vw, 48px); }
+    .deck-dots { display: none; }
+    .slide__display { font-size: clamp(28px, 7vw, 48px); }
+  }
+  @media (max-width: 768px) {
+    .slide--content .slide__inner { grid-template-columns: 1fr; }
+    .slide--content .slide__aside { display: none; }
+    .slide--split .slide__panels { grid-template-columns: 1fr; }
+    .slide--dashboard .slide__kpis { grid-template-columns: repeat(2, 1fr); }
+    .pipeline { flex-direction: column; }
+    .pipeline__arrow { justify-content: center; padding: 4px 0; transform: rotate(90deg); }
+  }
+
+  /* ============ CUSTOM: Feature cards ============ */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(12px, 1.5vw, 20px);
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: clamp(14px, 2vh, 24px) clamp(12px, 1.5vw, 20px);
+    border-left: 3px solid var(--accent);
+  }
+  .feature-card__title {
+    font-size: clamp(14px, 1.5vw, 18px);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .feature-card__desc {
+    font-size: clamp(12px, 1.2vw, 15px);
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  @media (max-width: 768px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ============ CUSTOM: Status badge ============ */
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1vw, 12px);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .badge--green { background: var(--green-dim); color: var(--green); }
+  .badge--red { background: var(--red-dim); color: var(--red); }
+  .badge--amber { background: var(--amber-dim); color: var(--amber); }
+  .badge--teal { background: var(--teal-dim); color: var(--teal); }
+</style>
+</head>
+<body>
+
+<!-- SVG GLOW FILTERS & FLOW DEFS -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-teal"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-green"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ah" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#7a9ab8"/>
+    </marker>
+    <marker id="ah-accent" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#0891b2"/>
+    </marker>
+    <marker id="ah-teal" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#14b8a6"/>
+    </marker>
+    <marker id="ah-green" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#34d399"/>
+    </marker>
+    <marker id="ah-amber" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#fbbf24"/>
+    </marker>
+    <marker id="ah-red" viewBox="0 0 12 8" refX="11" refY="4" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#fb7185"/>
+    </marker>
+    <linearGradient id="grad-accent-teal" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0891b2" stop-opacity="0.6"/><stop offset="100%" stop-color="#14b8a6" stop-opacity="0.4"/></linearGradient>
+    <linearGradient id="grad-teal-green" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#14b8a6" stop-opacity="0.6"/><stop offset="100%" stop-color="#34d399" stop-opacity="0.4"/></linearGradient>
+    <linearGradient id="grad-accent-green" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0891b2" stop-opacity="0.5"/><stop offset="100%" stop-color="#34d399" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="grad-amber-green" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fbbf24" stop-opacity="0.6"/><stop offset="100%" stop-color="#34d399" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="grad-amber-red" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fbbf24" stop-opacity="0.6"/><stop offset="100%" stop-color="#fb7185" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="grad-teal-amber" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#14b8a6" stop-opacity="0.5"/><stop offset="100%" stop-color="#fbbf24" stop-opacity="0.5"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="deck">
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 1: TITLE                                                   -->
+  <!-- ================================================================ -->
+  <section class="slide slide--title">
+    <svg class="slide__decor" style="top:0;right:0;" width="120" height="120" viewBox="0 0 120 120">
+      <line x1="120" y1="0" x2="120" y2="40" stroke="var(--accent)" stroke-width="2" opacity="0.15"/>
+      <line x1="80" y1="0" x2="120" y2="0" stroke="var(--accent)" stroke-width="2" opacity="0.15"/>
+    </svg>
+    <svg class="slide__decor" style="bottom:0;left:0;" width="120" height="120" viewBox="0 0 120 120">
+      <line x1="0" y1="80" x2="0" y2="120" stroke="var(--accent)" stroke-width="2" opacity="0.15"/>
+      <line x1="0" y1="120" x2="40" y2="120" stroke="var(--accent)" stroke-width="2" opacity="0.15"/>
+    </svg>
+    <div class="reveal">
+      <p class="slide__subtitle" style="margin-bottom:clamp(16px,2vh,32px);">Spec-Driven Development &mdash; Copilot Runtime</p>
+    </div>
+    <h1 class="slide__display reveal">AgentSpec</h1>
+    <div class="reveal">
+      <p class="slide__subtitle" style="margin-top:clamp(16px,2vh,32px);">De respostas gen&eacute;ricas a engenharia orientada por especifica&ccedil;&atilde;o</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 2: QUOTE                                                   -->
+  <!-- ================================================================ -->
+  <section class="slide slide--quote" style="background-image:radial-gradient(ellipse at 50% 50%, var(--accent-dim) 0%, transparent 35%);">
+    <div class="slide__quote-mark reveal">&ldquo;</div>
+    <blockquote class="reveal">
+      IA sem contexto produz respostas gen&eacute;ricas. IA com contexto obrigat&oacute;rio produz engenharia.
+    </blockquote>
+    <cite class="reveal">&mdash; Princ&iacute;pio AgentSpec</cite>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 3: DIVIDER — O Problema                                    -->
+  <!-- ================================================================ -->
+  <section class="slide slide--divider" style="background-image:radial-gradient(ellipse at 80% 60%, var(--red-dim) 0%, transparent 40%);">
+    <span class="slide__number">01</span>
+    <div>
+      <h2 class="slide__heading reveal">O Problema</h2>
+      <p class="slide__subtitle reveal" style="margin-top:12px;">Por que Copilot sem orquestra&ccedil;&atilde;o n&atilde;o escala</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 4: SPLIT — Before / After                                  -->
+  <!-- ================================================================ -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal" style="color:var(--red);">Sem AgentSpec</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Copilot Gen&eacute;rico</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">Sem contexto do projeto carregado</li>
+          <li class="reveal">Qualquer pergunta vai para o mesmo &ldquo;agente&rdquo;</li>
+          <li class="reveal">Zero rastreabilidade de decis&otilde;es</li>
+          <li class="reveal">C&oacute;digo gerado sem padr&otilde;es do time</li>
+          <li class="reveal">Retrabalho constante em cada itera&ccedil;&atilde;o</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary">
+        <p class="slide__label reveal" style="color:var(--green);">Com AgentSpec</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Copilot Especialista</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">Grounding obrigat&oacute;rio a cada resposta</li>
+          <li class="reveal">62 agentes especializados por dom&iacute;nio</li>
+          <li class="reveal">Workflow com artefatos rastreados</li>
+          <li class="reveal">KB local com padr&otilde;es do time</li>
+          <li class="reveal">Quality gates impedem c&oacute;digo incompleto</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 5: CONTENT — Dores                                         -->
+  <!-- ================================================================ -->
+  <section class="slide slide--content" style="background-image:radial-gradient(ellipse at 20% 80%, var(--red-dim) 0%, transparent 45%);">
+    <div class="slide__inner">
+      <div>
+        <p class="slide__label reveal">Dores reais</p>
+        <h2 class="slide__heading reveal">Os 5 problemas cr&iacute;ticos</h2>
+        <ul class="slide__bullets">
+          <li class="reveal"><strong>Contexto perdido</strong> &mdash; cada nova conversa come&ccedil;a do zero</li>
+          <li class="reveal"><strong>Agente &uacute;nico</strong> &mdash; mesma abordagem para dbt, Spark, IAM...</li>
+          <li class="reveal"><strong>Zero controle</strong> &mdash; sem entry/exit gates entre fases</li>
+          <li class="reveal"><strong>Token waste</strong> &mdash; KB inteiro carregado quando bastava 1 arquivo</li>
+          <li class="reveal"><strong>Audit trail ausente</strong> &mdash; sem rastreio de quem decidiu o qu&ecirc;</li>
+        </ul>
+      </div>
+      <div class="slide__aside reveal">
+        <svg viewBox="0 0 160 160" width="160" height="160">
+          <circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="2" opacity="0.3"/>
+          <circle cx="80" cy="80" r="40" fill="none" stroke="var(--red)" stroke-width="1.5" opacity="0.2" stroke-dasharray="4 4"/>
+          <circle cx="80" cy="80" r="8" fill="var(--red)" opacity="0.4"/>
+          <text x="80" y="130" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--text-dim)">SEM ESTRUTURA</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 6: DIVIDER — A Solução                                     -->
+  <!-- ================================================================ -->
+  <section class="slide slide--divider" style="background-image:radial-gradient(ellipse at 30% 40%, var(--accent-dim) 0%, transparent 40%);">
+    <span class="slide__number">02</span>
+    <div>
+      <h2 class="slide__heading reveal">A Solu&ccedil;&atilde;o: AgentSpec</h2>
+      <p class="slide__subtitle reveal" style="margin-top:12px;">Runtime de orquestra&ccedil;&atilde;o para GitHub Copilot</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 7: DIAGRAM — Grounding Chain (LR SVG Flow)                 -->
+  <!-- ================================================================ -->
+  <section class="slide slide--diagram" style="background-image:radial-gradient(ellipse at 60% 40%, var(--accent-dim) 0%, transparent 40%);">
+    <h2 class="slide__heading reveal">Cadeia de Grounding</h2>
+
+    <div class="reveal" style="flex:1; display:flex; align-items:center; justify-content:center; min-height:0;">
+      <svg viewBox="0 0 940 280" style="width:100%; max-height:100%; max-width:clamp(600px,82vw,980px);">
+
+        <!-- Node 1: Requisição -->
+        <rect x="0" y="117" width="115" height="46" rx="12" fill="rgba(8,145,178,0.1)" stroke="#0891b2" stroke-width="2" filter="url(#glow)"/>
+        <text x="57" y="135" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#0891b2" letter-spacing="1" font-weight="600">ENTRADA</text>
+        <text x="57" y="151" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#d8e8f4">Requisi&ccedil;&atilde;o</text>
+
+        <!-- Arrow 1→2 -->
+        <line x1="118" y1="140" x2="150" y2="140" stroke="url(#grad-accent-teal)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-teal)"/>
+
+        <!-- Node 2: grounding.md -->
+        <rect x="153" y="113" width="162" height="54" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8"/>
+        <text x="234" y="133" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#14b8a6" letter-spacing="1" font-weight="600">GROUNDING</text>
+        <text x="234" y="149" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#d8e8f4">grounding.md</text>
+
+        <!-- Arrow 2→3 -->
+        <line x1="318" y1="140" x2="350" y2="140" stroke="url(#grad-accent-teal)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-teal)"/>
+
+        <!-- Node 3: Decision -->
+        <rect x="353" y="114" width="118" height="52" rx="14" fill="rgba(20,184,166,0.12)" stroke="#14b8a6" stroke-width="2" filter="url(#glow-teal)"/>
+        <text x="412" y="134" text-anchor="middle" font-family="'Fira Code',monospace" font-size="9" fill="#14b8a6" font-weight="600">SKILL</text>
+        <text x="412" y="150" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#d8e8f4">invocado?</text>
+
+        <!-- Branch SIM (up-right curve) → SKILL.md -->
+        <path d="M471,127 C490,127 500,56 515,56" stroke="#14b8a6" stroke-width="2" fill="none" class="flow-line" marker-end="url(#ah-teal)"/>
+        <text x="496" y="84" font-family="'Fira Code',monospace" font-size="9" fill="#14b8a6" font-weight="700">SIM</text>
+
+        <!-- Node 4a: SKILL.md (top row) -->
+        <rect x="518" y="33" width="128" height="46" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8"/>
+        <text x="582" y="51" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#14b8a6" letter-spacing="1" font-weight="600">SKILL</text>
+        <text x="582" y="66" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#d8e8f4">SKILL.md</text>
+
+        <!-- Branch NÃO (down-right curve) → routing.json -->
+        <path d="M471,153 C490,153 500,224 510,224" stroke="#14b8a6" stroke-width="2" fill="none" class="flow-line" marker-end="url(#ah-teal)"/>
+        <text x="496" y="200" font-family="'Fira Code',monospace" font-size="9" fill="#14b8a6" font-weight="700">N&Atilde;O</text>
+
+        <!-- Node 4b: routing.json (bottom row) -->
+        <rect x="513" y="201" width="148" height="46" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8"/>
+        <text x="587" y="219" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#14b8a6" letter-spacing="1" font-weight="600">ROUTER</text>
+        <text x="587" y="234" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#d8e8f4">routing.json</text>
+
+        <!-- Converge: SKILL.md → merge -->
+        <path d="M649,56 L678,56 L678,140" stroke="url(#grad-teal-green)" stroke-width="2" fill="none" class="flow-line"/>
+
+        <!-- Converge: routing.json → merge -->
+        <path d="M664,224 L678,224 L678,140" stroke="url(#grad-teal-green)" stroke-width="2" fill="none" class="flow-line"/>
+
+        <!-- Merge → Agent arrow -->
+        <line x1="680" y1="140" x2="705" y2="140" stroke="url(#grad-teal-green)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-green)"/>
+
+        <!-- Node 5: Agente Ativado -->
+        <rect x="708" y="108" width="230" height="64" rx="12" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2" filter="url(#glow-green)"/>
+        <text x="823" y="128" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#34d399" letter-spacing="1" font-weight="600">AGENTE ATIVADO</text>
+        <text x="823" y="146" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="13" fill="#d8e8f4">Agente Especialista</text>
+        <text x="823" y="163" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#34d399" opacity="0.7">KB: quick-reference.md</text>
+
+      </svg>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 8: DASHBOARD — Inventário                                  -->
+  <!-- ================================================================ -->
+  <section class="slide slide--dashboard" style="background-image:radial-gradient(ellipse at 70% 30%, var(--accent-dim) 0%, transparent 40%);">
+    <h2 class="slide__heading reveal">Invent&aacute;rio do Runtime</h2>
+    <div class="slide__kpis">
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--accent-bright);">62</div>
+        <div class="slide__kpi-label">Agentes</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">+ DEFAULT router</div>
+      </div>
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--teal);">26</div>
+        <div class="slide__kpi-label">KB Domains</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">lazy loading</div>
+      </div>
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--green);">9</div>
+        <div class="slide__kpi-label">Skills</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">slash-invoked</div>
+      </div>
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--amber);">6</div>
+        <div class="slide__kpi-label">Fases SDD</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">+ iterate cross-phase</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 9: DIVIDER — SDD Workflow                                  -->
+  <!-- ================================================================ -->
+  <section class="slide slide--divider" style="background-image:radial-gradient(ellipse at 70% 50%, var(--teal-dim) 0%, transparent 40%);">
+    <span class="slide__number">03</span>
+    <div>
+      <h2 class="slide__heading reveal">SDD Workflow</h2>
+      <p class="slide__subtitle reveal" style="margin-top:12px;">Spec-Driven Development &mdash; do brainstorm ao ship</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 10: PIPELINE CSS — 6 Fases                                 -->
+  <!-- ================================================================ -->
+  <section class="slide" style="background-image:radial-gradient(ellipse at 40% 70%, var(--teal-dim) 0%, transparent 45%);">
+    <p class="slide__label reveal">Lifecycle completo</p>
+    <h2 class="slide__heading reveal">Fases do SDD</h2>
+    <div class="pipeline reveal">
+      <div class="pipeline__step" style="border-top-color:var(--accent);">
+        <div class="pipeline__num">00</div>
+        <div class="pipeline__name">Brainstorm</div>
+        <div class="pipeline__desc">Explorar ideias e abordagens</div>
+        <div class="pipeline__file">BRAINSTORM_{F}.md</div>
+      </div>
+      <div class="pipeline__arrow">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14m-4-4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pipeline__step" style="border-top-color:var(--teal);">
+        <div class="pipeline__num">01</div>
+        <div class="pipeline__name">Define</div>
+        <div class="pipeline__desc">Requisitos e crit&eacute;rios de aceita&ccedil;&atilde;o</div>
+        <div class="pipeline__file">DEFINE_{F}.md</div>
+      </div>
+      <div class="pipeline__arrow">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14m-4-4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pipeline__step" style="border-top-color:var(--green);">
+        <div class="pipeline__num">02</div>
+        <div class="pipeline__name">Design</div>
+        <div class="pipeline__desc">Arquitetura e file manifest</div>
+        <div class="pipeline__file">DESIGN_{F}.md</div>
+      </div>
+      <div class="pipeline__arrow">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14m-4-4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pipeline__step" style="border-top-color:var(--amber);">
+        <div class="pipeline__num">03</div>
+        <div class="pipeline__name">Build</div>
+        <div class="pipeline__desc">Implementa&ccedil;&atilde;o + delega&ccedil;&atilde;o</div>
+        <div class="pipeline__file">projects/{feature}/</div>
+      </div>
+      <div class="pipeline__arrow">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14m-4-4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pipeline__step" style="border-top-color:var(--red);">
+        <div class="pipeline__num">3.5</div>
+        <div class="pipeline__name">Validate</div>
+        <div class="pipeline__desc">Score &ge; 90 + 0 CRITICAL</div>
+        <div class="pipeline__file">VALIDATION_{F}.md</div>
+      </div>
+      <div class="pipeline__arrow">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14m-4-4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pipeline__step" style="border-top-color:var(--accent-bright);">
+        <div class="pipeline__num">04</div>
+        <div class="pipeline__name">Ship</div>
+        <div class="pipeline__desc">Archive + lessons learned</div>
+        <div class="pipeline__file">SHIPPED_{DATE}.md</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 11: CONTENT — Quality Gates                                -->
+  <!-- ================================================================ -->
+  <section class="slide slide--content" style="background-image:radial-gradient(ellipse at 80% 20%, var(--amber-dim) 0%, transparent 45%);">
+    <div class="slide__inner">
+      <div>
+        <p class="slide__label reveal">Controle de qualidade</p>
+        <h2 class="slide__heading reveal">Quality Gates</h2>
+        <ul class="slide__bullets">
+          <li class="reveal"><strong>Entry/Exit gates</strong> &mdash; cada fase exige crit&eacute;rios m&iacute;nimos para avan&ccedil;ar</li>
+          <li class="reveal"><strong>Clarity Score</strong> &mdash; Define exige pontua&ccedil;&atilde;o de clareza nos requisitos</li>
+          <li class="reveal"><strong>File Manifest</strong> &mdash; Design exige manifesto completo com @agents</li>
+          <li class="reveal"><strong>Validate obrigat&oacute;rio</strong> &mdash; Build &rarr; Ship bloqueado sem valida&ccedil;&atilde;o</li>
+          <li class="reveal"><strong>Score &ge; 90</strong> &mdash; threshold m&iacute;nimo + zero findings CR&Iacute;TICOS</li>
+        </ul>
+      </div>
+      <div class="slide__aside reveal">
+        <svg viewBox="0 0 160 160" width="160" height="160">
+          <rect x="30" y="20" width="100" height="120" rx="8" fill="none" stroke="var(--amber)" stroke-width="2" opacity="0.3"/>
+          <line x1="50" y1="55" x2="110" y2="55" stroke="var(--green)" stroke-width="2" opacity="0.5"/>
+          <line x1="50" y1="75" x2="110" y2="75" stroke="var(--green)" stroke-width="2" opacity="0.5"/>
+          <line x1="50" y1="95" x2="90" y2="95" stroke="var(--amber)" stroke-width="2" opacity="0.5"/>
+          <line x1="50" y1="115" x2="70" y2="115" stroke="var(--red)" stroke-width="2" opacity="0.5"/>
+          <text x="80" y="152" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--text-dim)">QUALITY GATE</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 12: CONTENT — Validate (explicação)                        -->
+  <!-- ================================================================ -->
+  <section class="slide slide--content" style="background-image:radial-gradient(ellipse at 30% 60%, var(--teal-dim) 0%, transparent 45%);">
+    <div class="slide__inner">
+      <div>
+        <p class="slide__label reveal">Fase 3.5</p>
+        <h2 class="slide__heading reveal">Validate &mdash; 4 Juntas</h2>
+        <ul class="slide__bullets">
+          <li class="reveal"><strong>Junta de Spec</strong> &mdash; mapeia cada requisito DEFINE para evid&ecirc;ncia no c&oacute;digo (4 personas: MGR, ARC, ENG, SWE)</li>
+          <li class="reveal"><strong>Junta de C&oacute;digo</strong> &mdash; qualidade, anti-patterns, type safety, DevOps hygiene (4 personas)</li>
+          <li class="reveal"><strong>Junta de Entrega</strong> &mdash; compara DESIGN manifest vs code_tree real (2 personas: CMP, GAP)</li>
+          <li class="reveal"><strong>Conselho Final</strong> &mdash; sum&aacute;rio executivo e readiness assessment (3 personas: JDG, RPT, PRD)</li>
+        </ul>
+      </div>
+      <div class="slide__aside reveal">
+        <div style="text-align:center;">
+          <div style="font-size:clamp(48px,8vw,72px);font-weight:800;color:var(--green);line-height:1;">&#8805; 90</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:8px;text-transform:uppercase;letter-spacing:1.5px;">Score para RUNBOOK</div>
+          <div style="margin-top:16px;font-size:clamp(36px,6vw,56px);font-weight:800;color:var(--red);line-height:1;">0</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:8px;text-transform:uppercase;letter-spacing:1.5px;">CRITICAL permitidos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 13: DIAGRAM — Validate Pipeline (LR SVG Flow)              -->
+  <!-- ================================================================ -->
+  <section class="slide slide--diagram" style="background-image:radial-gradient(ellipse at 50% 50%, var(--teal-dim) 0%, transparent 40%);">
+    <h2 class="slide__heading reveal">Pipeline de Valida&ccedil;&atilde;o</h2>
+
+    <div class="reveal" style="flex:1; display:flex; align-items:center; justify-content:center; min-height:0;">
+      <svg viewBox="0 0 1100 280" style="width:100%; max-height:100%; max-width:clamp(640px,88vw,1140px);">
+
+        <!-- Node 1: Evidence Pack -->
+        <rect x="0" y="112" width="110" height="56" rx="12" fill="rgba(8,145,178,0.12)" stroke="#0891b2" stroke-width="2" filter="url(#glow)"/>
+        <text x="55" y="132" text-anchor="middle" font-family="'Fira Code',monospace" font-size="7" fill="#0891b2" letter-spacing="1" font-weight="600">EVIDENCE PACK</text>
+        <text x="55" y="148" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">DEFINE + DESIGN</text>
+        <text x="55" y="160" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">+ BUILD</text>
+
+        <!-- Branch → Spec Junta (up-right curve) -->
+        <path d="M113,127 C132,127 140,56 152,56" stroke="url(#grad-accent-teal)" stroke-width="2" fill="none" class="flow-line" marker-end="url(#ah-teal)"/>
+
+        <!-- Branch → Code Junta (down-right curve) -->
+        <path d="M113,153 C132,153 140,224 152,224" stroke="url(#grad-accent-teal)" stroke-width="2" fill="none" class="flow-line" marker-end="url(#ah-teal)"/>
+
+        <!-- Node 2a: Spec Junta (top row) -->
+        <rect x="155" y="28" width="150" height="56" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8" filter="url(#glow-teal)"/>
+        <text x="230" y="49" text-anchor="middle" font-family="'Fira Code',monospace" font-size="7" fill="#14b8a6" letter-spacing="1" font-weight="600">JUNTA DE SPEC</text>
+        <text x="230" y="65" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">4 personas</text>
+        <rect x="160" y="33" width="44" height="12" rx="3" fill="rgba(20,184,166,0.15)"/>
+        <text x="182" y="42" text-anchor="middle" font-family="'Fira Code',monospace" font-size="6" fill="#14b8a6" font-weight="600">PARALELO</text>
+
+        <!-- Node 2b: Code Junta (bottom row) -->
+        <rect x="155" y="196" width="150" height="56" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8" filter="url(#glow-teal)"/>
+        <text x="230" y="217" text-anchor="middle" font-family="'Fira Code',monospace" font-size="7" fill="#14b8a6" letter-spacing="1" font-weight="600">JUNTA DE C&Oacute;DIGO</text>
+        <text x="230" y="233" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">4 personas</text>
+        <rect x="160" y="201" width="44" height="12" rx="3" fill="rgba(20,184,166,0.15)"/>
+        <text x="182" y="210" text-anchor="middle" font-family="'Fira Code',monospace" font-size="6" fill="#14b8a6" font-weight="600">PARALELO</text>
+
+        <!-- Converge: Spec → merge -->
+        <path d="M308,56 L332,56 L332,140" stroke="url(#grad-teal-green)" stroke-width="2" fill="none" class="flow-line"/>
+
+        <!-- Converge: Code → merge -->
+        <path d="M308,224 L332,224 L332,140" stroke="url(#grad-teal-green)" stroke-width="2" fill="none" class="flow-line"/>
+
+        <!-- Merge → Delivery arrow -->
+        <line x1="334" y1="140" x2="347" y2="140" stroke="url(#grad-teal-green)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-green)"/>
+
+        <!-- Node 3: Delivery Junta -->
+        <rect x="350" y="114" width="130" height="52" rx="12" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="1.8"/>
+        <text x="415" y="133" text-anchor="middle" font-family="'Fira Code',monospace" font-size="7" fill="#14b8a6" letter-spacing="1" font-weight="600">ENTREGA</text>
+        <text x="415" y="149" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">2 personas</text>
+
+        <!-- Arrow Delivery → Scoring -->
+        <line x1="483" y1="140" x2="519" y2="140" stroke="url(#grad-teal-amber)" stroke-width="2.5" class="flow-line" marker-end="url(#ah-amber)"/>
+
+        <!-- Node 4: Scoring -->
+        <rect x="522" y="116" width="118" height="48" rx="12" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="581" y="134" text-anchor="middle" font-family="'Fira Code',monospace" font-size="7" fill="#fbbf24" letter-spacing="1" font-weight="600">SCORING</text>
+        <text x="581" y="150" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">sem LLM</text>
+
+        <!-- Arrow Scoring → Council -->
+        <line x1="643" y1="140" x2="679" y2="140" stroke="#fbbf24" stroke-width="2" stroke-opacity="0.5" class="flow-line" marker-end="url(#ah-amber)"/>
+
+        <!-- Node 5: Council -->
+        <rect x="682" y="114" width="110" height="52" rx="12" fill="rgba(251,191,36,0.08)" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="737" y="133" text-anchor="middle" font-family="'Fira Code',monospace" font-size="7" fill="#fbbf24" letter-spacing="1" font-weight="600">CONSELHO</text>
+        <text x="737" y="149" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#d8e8f4">3 personas</text>
+
+        <!-- Arrow Council → Decision -->
+        <line x1="795" y1="140" x2="832" y2="140" stroke="#fbbf24" stroke-width="2" stroke-opacity="0.5" class="flow-line" marker-end="url(#ah-amber)"/>
+
+        <!-- Node 6: Decision -->
+        <rect x="835" y="113" width="115" height="54" rx="12" fill="rgba(251,191,36,0.12)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="892" y="134" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#fbbf24" font-weight="600">Score &ge; 90</text>
+        <text x="892" y="150" text-anchor="middle" font-family="'Fira Code',monospace" font-size="8" fill="#fbbf24" font-weight="600">&amp; 0 CRITICAL?</text>
+
+        <!-- Branch SIM (up-right) → RUNBOOK -->
+        <path d="M953,127 C970,127 980,56 995,56" stroke="url(#grad-amber-green)" stroke-width="2.5" fill="none" class="flow-line" marker-end="url(#ah-green)"/>
+        <text x="978" y="84" font-family="'Fira Code',monospace" font-size="8" fill="#34d399" font-weight="700">SIM</text>
+
+        <!-- Node 7a: RUNBOOK -->
+        <rect x="998" y="38" width="96" height="36" rx="8" fill="rgba(52,211,153,0.15)" stroke="#34d399" stroke-width="1.8" filter="url(#glow-green)"/>
+        <text x="1046" y="61" text-anchor="middle" font-family="'Fira Code',monospace" font-size="10" fill="#34d399" font-weight="700">RUNBOOK &#10003;</text>
+
+        <!-- Branch NÃO (down-right) → ROADMAP -->
+        <path d="M953,153 C970,153 980,224 995,224" stroke="url(#grad-amber-red)" stroke-width="2.5" fill="none" class="flow-line" marker-end="url(#ah-red)"/>
+        <text x="978" y="200" font-family="'Fira Code',monospace" font-size="8" fill="#fb7185" font-weight="700">N&Atilde;O</text>
+
+        <!-- Node 7b: ROADMAP -->
+        <rect x="998" y="206" width="96" height="36" rx="8" fill="rgba(251,113,133,0.12)" stroke="#fb7185" stroke-width="1.8"/>
+        <text x="1046" y="229" text-anchor="middle" font-family="'Fira Code',monospace" font-size="10" fill="#fb7185" font-weight="700">ROADMAP</text>
+
+      </svg>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 14: SPLIT — Workflow Contracts                             -->
+  <!-- ================================================================ -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal">Contratos do Workflow</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Entry &rarr; Exit Gates</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal"><span class="badge badge--teal">DEFINE</span> input: ideia &rarr; output: requisitos + clarity score</li>
+          <li class="reveal"><span class="badge badge--green">DESIGN</span> input: DEFINE &rarr; output: manifest + @agents</li>
+          <li class="reveal"><span class="badge badge--amber">BUILD</span> input: DESIGN &rarr; output: c&oacute;digo + BUILD_REPORT</li>
+          <li class="reveal"><span class="badge badge--red">VALIDATE</span> input: tudo &rarr; output: score + RUNBOOK/ROADMAP</li>
+          <li class="reveal"><span class="badge badge--teal">SHIP</span> input: VALIDATE aprovado &rarr; output: archive</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary" style="display:flex;flex-direction:column;justify-content:center;gap:16px;">
+        <p class="slide__label reveal" style="color:var(--amber);">Regras de bloqueio</p>
+        <div class="feature-card reveal" style="border-left-color:var(--red);">
+          <div class="feature-card__title">Ship &eacute; bloqueado</div>
+          <div class="feature-card__desc">Sem VALIDATION_REPORT aprovado, ship n&atilde;o executa</div>
+        </div>
+        <div class="feature-card reveal" style="border-left-color:var(--amber);">
+          <div class="feature-card__title">Score determinístico</div>
+          <div class="feature-card__desc">F&oacute;rmula fixa, sem LLM influenciando nota final</div>
+        </div>
+        <div class="feature-card reveal" style="border-left-color:var(--green);">
+          <div class="feature-card__title">Cascade com Iterate</div>
+          <div class="feature-card__desc">Mudan&ccedil;as em DEFINE propagam para DESIGN automaticamente</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 15: SPLIT — Delegation                                     -->
+  <!-- ================================================================ -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal">Fase Build</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(22px,3.5vw,36px);">Delega&ccedil;&atilde;o a Especialistas</h2>
+        <ul class="slide__bullets" style="margin-top:16px;">
+          <li class="reveal">DESIGN cont&eacute;m <code>@{agent-name}</code> por arquivo</li>
+          <li class="reveal">Build l&ecirc; o agent file + KB do especialista</li>
+          <li class="reveal">Especialista executa sob seus pr&oacute;prios quality gates</li>
+          <li class="reveal">Evid&ecirc;ncia registrada no BUILD_REPORT</li>
+          <li class="reveal">Se quality gate falha, build para imediatamente</li>
+        </ul>
+      </div>
+      <div class="slide__panel slide__panel--secondary" style="display:flex;flex-direction:column;justify-content:center;gap:12px;">
+        <p class="slide__label reveal" style="color:var(--accent);">Exemplo: local-analytics-stack</p>
+        <div class="feature-card reveal" style="border-left-color:var(--accent);">
+          <div class="feature-card__title">@container-specialist</div>
+          <div class="feature-card__desc">Docker + Compose</div>
+        </div>
+        <div class="feature-card reveal" style="border-left-color:var(--teal);">
+          <div class="feature-card__title">@dbt-specialist</div>
+          <div class="feature-card__desc">Modelos dbt</div>
+        </div>
+        <div class="feature-card reveal" style="border-left-color:var(--amber);">
+          <div class="feature-card__title">@airflow-specialist</div>
+          <div class="feature-card__desc">DAGs Airflow</div>
+        </div>
+        <div class="feature-card reveal" style="border-left-color:var(--green);">
+          <div class="feature-card__title">@python-developer</div>
+          <div class="feature-card__desc">Scripts + Testes</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 16: DIVIDER — Agentes & Conhecimento                       -->
+  <!-- ================================================================ -->
+  <section class="slide slide--divider" style="background-image:radial-gradient(ellipse at 60% 40%, var(--accent-dim) 0%, transparent 40%);">
+    <span class="slide__number">04</span>
+    <div>
+      <h2 class="slide__heading reveal">Agentes &amp; Conhecimento</h2>
+      <p class="slide__subtitle reveal" style="margin-top:12px;">62 especialistas + 26 dom&iacute;nios de KB</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 17: TABLE — Categorias de Agentes                          -->
+  <!-- ================================================================ -->
+  <section class="slide slide--table">
+    <h2 class="slide__heading reveal">Categorias de Agentes</h2>
+    <div class="table-wrap reveal" style="flex:1; min-height:0; margin-top:clamp(8px,1.5vh,20px);">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Categoria</th><th>Agentes</th><th>Foco</th></tr></thead>
+          <tbody>
+            <tr><td><code>architect</code></td><td>8</td><td>Planning, schemas, lakehouse, medallion, GenAI, KB</td></tr>
+            <tr><td><code>cloud</code></td><td>11</td><td>AWS, GCP, Supabase, containers, CI/CD, Lambda</td></tr>
+            <tr><td><code>data-engineering</code></td><td>15</td><td>dbt, Airflow, Spark, Lakeflow, SQL, streaming</td></tr>
+            <tr><td><code>dev</code></td><td>6</td><td>Routing, explora&ccedil;&atilde;o, review, judge, shell scripts</td></tr>
+            <tr><td><code>platform</code></td><td>6</td><td>Microsoft Fabric (arquitetura, security, AI, pipelines)</td></tr>
+            <tr><td><code>python</code></td><td>6</td><td>Dev, cleanup, review, docs, prompts, LLM</td></tr>
+            <tr><td><code>test</code></td><td>3</td><td>Tests, data quality, data contracts</td></tr>
+            <tr><td><code>workflow</code></td><td>7</td><td>Brainstorm, Define, Design, Build, Validate, Ship, Iterate</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 18: CONTENT — KB Lazy Loading                              -->
+  <!-- ================================================================ -->
+  <section class="slide slide--content right-heavy" style="background-image:radial-gradient(ellipse at 80% 70%, var(--teal-dim) 0%, transparent 45%);">
+    <div class="slide__inner">
+      <div>
+        <p class="slide__label reveal">Economia de tokens</p>
+        <h2 class="slide__heading reveal">KB Lazy Loading</h2>
+        <ul class="slide__bullets">
+          <li class="reveal"><strong>N&iacute;vel 1</strong> &mdash; <code>quick-reference.md</code> sempre primeiro</li>
+          <li class="reveal"><strong>N&iacute;vel 2</strong> &mdash; <code>concepts/</code> e <code>patterns/</code> sob demanda</li>
+          <li class="reveal"><strong>M&aacute;x 3 arquivos</strong> por request</li>
+          <li class="reveal"><strong>M&aacute;x 3 dom&iacute;nios</strong> em tarefas multi-dom&iacute;nio</li>
+        </ul>
+      </div>
+      <div class="slide__aside reveal">
+        <div class="feature-grid" style="grid-template-columns:1fr;">
+          <div class="feature-card" style="border-left-color:var(--green);">
+            <div class="feature-card__title">26 dom&iacute;nios</div>
+            <div class="feature-card__desc">airflow, dbt, spark, sql, containers, terraform, gcp, aws, streaming...</div>
+          </div>
+          <div class="feature-card" style="border-left-color:var(--teal);">
+            <div class="feature-card__title">Estrutura padr&atilde;o</div>
+            <div class="feature-card__desc">quick-reference.md &rarr; index.md &rarr; concepts/ &rarr; patterns/ &rarr; specs/</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 19: DIVIDER — Skills & Comandos                            -->
+  <!-- ================================================================ -->
+  <section class="slide slide--divider" style="background-image:radial-gradient(ellipse at 40% 60%, var(--green-dim) 0%, transparent 40%);">
+    <span class="slide__number">05</span>
+    <div>
+      <h2 class="slide__heading reveal">Skills &amp; Comandos</h2>
+      <p class="slide__subtitle reveal" style="margin-top:12px;">9 skills com invoca&ccedil;&atilde;o por slash</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 20: TABLE — Skills                                         -->
+  <!-- ================================================================ -->
+  <section class="slide slide--table">
+    <h2 class="slide__heading reveal">Skills Dispon&iacute;veis</h2>
+    <div class="table-wrap reveal" style="flex:1; min-height:0; margin-top:clamp(8px,1.5vh,20px);">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Skill</th><th>Comandos</th><th>Prop&oacute;sito</th></tr></thead>
+          <tbody>
+            <tr><td><code>/workflow-commands</code></td><td>/brainstorm, /define, /design, /build, /validate, /ship</td><td>Lifecycle SDD completo</td></tr>
+            <tr><td><code>/data-engineering-commands</code></td><td>/pipeline, /schema, /data-quality, /lakehouse, /sql-review</td><td>Engenharia de dados</td></tr>
+            <tr><td><code>/knowledge-commands</code></td><td>/create-kb, /update-kb, /refresh-stale-kbs</td><td>Gest&atilde;o de KB</td></tr>
+            <tr><td><code>/review-commands</code></td><td>/review, /judge</td><td>Code review + cross-model</td></tr>
+            <tr><td><code>/visual-explainer</code></td><td>/generate-web-diagram, /generate-slides, /fact-check</td><td>Visualiza&ccedil;&otilde;es HTML</td></tr>
+            <tr><td><code>/core-commands</code></td><td>/status, /meeting, /memory, /sync-context</td><td>Utilit&aacute;rios do runtime</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 21: CODE — Fluxo SDD Completo                              -->
+  <!-- ================================================================ -->
+  <section class="slide slide--code" style="background-image:radial-gradient(ellipse at 50% 80%, var(--accent-dim) 0%, transparent 40%);">
+    <h2 class="slide__heading reveal" style="text-align:center;">Fluxo SDD em 6 Comandos</h2>
+    <div class="slide__code-block reveal" style="margin-top:clamp(12px,2vh,24px);">
+      <span class="slide__code-filename">terminal</span>
+      <pre><code><span class="cm"># 1. Explorar a ideia</span>
+<span class="hl">/workflow-commands /brainstorm</span> "minha feature"
+
+<span class="cm"># 2. Capturar requisitos</span>
+<span class="hl">/workflow-commands /define</span> BRAINSTORM_MY_FEATURE.md
+
+<span class="cm"># 3. Arquitetura + agent assignments</span>
+<span class="hl">/workflow-commands /design</span> DEFINE_MY_FEATURE.md
+
+<span class="cm"># 4. Implementar com delega&ccedil;&atilde;o</span>
+<span class="hl">/workflow-commands /build</span> DESIGN_MY_FEATURE.md
+
+<span class="cm"># 5. Validar (score &ge; 90, 0 CRITICAL)</span>
+<span class="hl">/workflow-commands /validate</span> my-feature
+
+<span class="cm"># 6. Arquivar + lessons learned</span>
+<span class="hl">/workflow-commands /ship</span> DEFINE_MY_FEATURE.md</code></pre>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 22: DIVIDER — Redução de Tempo                             -->
+  <!-- ================================================================ -->
+  <section class="slide slide--divider" style="background-image:radial-gradient(ellipse at 50% 40%, var(--green-dim) 0%, transparent 40%);">
+    <span class="slide__number">06</span>
+    <div>
+      <h2 class="slide__heading reveal">Redu&ccedil;&atilde;o de Tempo</h2>
+      <p class="slide__subtitle reveal" style="margin-top:12px;">Como SDD acelera o desenvolvimento</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 23: DASHBOARD — Métricas de Redução                        -->
+  <!-- ================================================================ -->
+  <section class="slide slide--dashboard" style="background-image:radial-gradient(ellipse at 30% 70%, var(--green-dim) 0%, transparent 40%);">
+    <h2 class="slide__heading reveal">Impacto Estimado</h2>
+    <div class="slide__kpis">
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--green);">&darr;60%</div>
+        <div class="slide__kpi-label">Retrabalho</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">quality gates previnem c&oacute;digo incompleto</div>
+      </div>
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--accent-bright);">&darr;70%</div>
+        <div class="slide__kpi-label">Context Switching</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">grounding autom&aacute;tico a cada request</div>
+      </div>
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--teal);">4&times;</div>
+        <div class="slide__kpi-label">Paralelismo</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">delega&ccedil;&atilde;o simult&acirc;nea a especialistas</div>
+      </div>
+      <div class="slide__kpi reveal">
+        <div class="slide__kpi-val" style="color:var(--amber);">100%</div>
+        <div class="slide__kpi-label">Rastreabilidade</div>
+        <div class="slide__kpi-trend" style="color:var(--text-dim);">audit trail da ideia ao deploy</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 24: CONTENT — Benefícios                                   -->
+  <!-- ================================================================ -->
+  <section class="slide slide--content" style="background-image:radial-gradient(ellipse at 70% 30%, var(--green-dim) 0%, transparent 45%);">
+    <div class="slide__inner">
+      <div>
+        <p class="slide__label reveal">Por que adotar</p>
+        <h2 class="slide__heading reveal">Benef&iacute;cios Concretos</h2>
+        <ul class="slide__bullets">
+          <li class="reveal"><strong>Menos itera&ccedil;&otilde;es</strong> &mdash; requisitos claros desde o in&iacute;cio reduzem ciclos de feedback</li>
+          <li class="reveal"><strong>Documenta&ccedil;&atilde;o autom&aacute;tica</strong> &mdash; cada fase gera artefatos rastreados</li>
+          <li class="reveal"><strong>Onboarding acelerado</strong> &mdash; KB local ensina padr&otilde;es do time ao Copilot</li>
+          <li class="reveal"><strong>Qualidade consistente</strong> &mdash; validate com 4 juntas garante cobertura de spec, c&oacute;digo e entrega</li>
+          <li class="reveal"><strong>Escala sem caos</strong> &mdash; 62 especialistas, cada um no seu dom&iacute;nio</li>
+        </ul>
+      </div>
+      <div class="slide__aside reveal">
+        <svg viewBox="0 0 160 160" width="160" height="160">
+          <circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="2" opacity="0.3"/>
+          <circle cx="80" cy="80" r="40" fill="none" stroke="var(--green)" stroke-width="1.5" opacity="0.4"/>
+          <circle cx="80" cy="80" r="20" fill="var(--green)" opacity="0.15"/>
+          <polyline points="60,85 75,100 105,65" fill="none" stroke="var(--green)" stroke-width="3" opacity="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="80" y="150" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--text-dim)">VALIDATED</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SLIDE 25: FULL-BLEED — CTA                                       -->
+  <!-- ================================================================ -->
+  <section class="slide slide--bleed">
+    <div class="slide__bg slide__bg--gradient"></div>
+    <div class="slide__scrim"></div>
+    <div class="slide__content">
+      <p class="slide__label reveal" style="color:rgba(255,255,255,0.6);">Pr&oacute;ximo passo</p>
+      <h2 class="slide__heading reveal" style="font-size:clamp(32px,6vw,56px);">Comece com um Brainstorm</h2>
+      <p class="slide__subtitle reveal" style="color:rgba(255,255,255,0.6); margin-top:16px;">
+        <code style="background:rgba(255,255,255,0.1);padding:6px 16px;border-radius:6px;font-size:clamp(14px,2vw,22px);">/workflow-commands /brainstorm &quot;sua ideia&quot;</code>
+      </p>
+      <p class="slide__subtitle reveal" style="color:rgba(255,255,255,0.4); margin-top:clamp(16px,3vh,32px); font-size:clamp(10px,1.2vw,14px);">
+        github.com &bull; AgentSpec &bull; SDD para Copilot
+      </p>
+    </div>
+  </section>
+
+</div><!-- /deck -->
+
+<script>
+  // AutoFit for KPIs and quotes
+  function autoFit() {
+    document.querySelectorAll('.slide__kpi-val').forEach(function(el) {
+      if (el.scrollWidth > el.clientWidth) {
+        var s = el.clientWidth / el.scrollWidth;
+        el.style.transform = 'scale(' + s + ')';
+        el.style.transformOrigin = 'left top';
+      }
+    });
+    document.querySelectorAll('.slide--quote blockquote').forEach(function(el) {
+      var len = el.textContent.trim().length;
+      if (len > 100) {
+        var scale = Math.max(0.5, 100 / len);
+        var fs = parseFloat(getComputedStyle(el).fontSize);
+        el.style.fontSize = Math.max(16, Math.round(fs * scale)) + 'px';
+      }
+    });
+  }
+
+  // SlideEngine
+  function SlideEngine(){
+    this.deck=document.querySelector('.deck');
+    this.slides=[].slice.call(document.querySelectorAll('.slide'));
+    this.current=0;
+    this.total=this.slides.length;
+    this.buildChrome();
+    this.bindEvents();
+    this.observe();
+    this.update();
+  }
+  SlideEngine.prototype.buildChrome=function(){
+    var bar=document.createElement('div');bar.className='deck-progress';document.body.appendChild(bar);this.bar=bar;
+    var dots=document.createElement('div');dots.className='deck-dots';var self=this;
+    this.slides.forEach(function(_,i){var d=document.createElement('button');d.className='deck-dot';d.title='Slide '+(i+1);d.onclick=function(){self.goTo(i);};dots.appendChild(d);});
+    document.body.appendChild(dots);this.dots=[].slice.call(dots.children);
+    var ctr=document.createElement('div');ctr.className='deck-counter';document.body.appendChild(ctr);this.counter=ctr;
+    var hints=document.createElement('div');hints.className='deck-hints';hints.textContent='\u2190 \u2192 ou scroll para navegar';document.body.appendChild(hints);this.hints=hints;
+    this.hintTimer=setTimeout(function(){hints.classList.add('faded');},4000);
+  };
+  SlideEngine.prototype.bindEvents=function(){
+    var self=this;
+    document.addEventListener('keydown',function(e){
+      if(e.target.closest('.table-scroll,.code-scroll,input,textarea,[contenteditable]'))return;
+      if(['ArrowDown','ArrowRight',' ','PageDown'].indexOf(e.key)>-1){e.preventDefault();self.next();}
+      else if(['ArrowUp','ArrowLeft','PageUp'].indexOf(e.key)>-1){e.preventDefault();self.prev();}
+      else if(e.key==='Home'){e.preventDefault();self.goTo(0);}
+      else if(e.key==='End'){e.preventDefault();self.goTo(self.total-1);}
+      self.fadeHints();
+    });
+    var tY;
+    this.deck.addEventListener('touchstart',function(e){tY=e.touches[0].clientY;},{passive:true});
+    this.deck.addEventListener('touchend',function(e){var dy=tY-e.changedTouches[0].clientY;if(Math.abs(dy)>50){dy>0?self.next():self.prev();}});
+  };
+  SlideEngine.prototype.observe=function(){
+    var self=this;
+    var obs=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');self.current=self.slides.indexOf(entry.target);self.update();}});},{threshold:0.5});
+    this.slides.forEach(function(s){obs.observe(s);});
+  };
+  SlideEngine.prototype.goTo=function(i){this.slides[Math.max(0,Math.min(i,this.total-1))].scrollIntoView({behavior:'smooth'});};
+  SlideEngine.prototype.next=function(){if(this.current<this.total-1)this.goTo(this.current+1);};
+  SlideEngine.prototype.prev=function(){if(this.current>0)this.goTo(this.current-1);};
+  SlideEngine.prototype.update=function(){
+    this.bar.style.width=((this.current+1)/this.total*100)+'%';
+    var c=this.current;this.dots.forEach(function(d,i){d.classList.toggle('active',i===c);});
+    this.counter.textContent=(this.current+1)+' / '+this.total;
+  };
+  SlideEngine.prototype.fadeHints=function(){clearTimeout(this.hintTimer);this.hints.classList.add('faded');};
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', function() {
+    autoFit();
+    new SlideEngine();
+  });
+</script>
+
+</body>
+</html>

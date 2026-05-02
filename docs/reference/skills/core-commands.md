@@ -38,4 +38,3 @@ flowchart TD
 Use este skill quando a tarefa for sobre organizacao de informacao, manutencao de contexto ou leitura de estado. Ele nao deve ser usado para iniciar uma fase SDD, porque esse contrato pertence ao `/workflow-commands`. Tambem nao deve ser usado para criar KBs, porque esse dominio pertence ao `/knowledge-commands`.
 
 O padrao recomendado e invocar o skill com o subcomando explicito e um alvo claro. Por exemplo, uma ata de reuniao deve ser passada como caminho de arquivo; uma memoria deve conter o resumo de alto valor; um status deve ser pedido sem misturar uma implementacao no mesmo comando. Isso mantem o comando pequeno, auditavel e previsivel.
-

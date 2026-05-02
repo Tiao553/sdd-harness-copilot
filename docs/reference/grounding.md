@@ -48,4 +48,3 @@ flowchart LR
 ```
 
 O grounding nao escolhe todos os detalhes; ele garante que a escolha aconteca no lugar certo. Se houver skill, o skill manda. Se nao houver skill, o router decide. Se houver conflito, arquivos canonicos como `COPILOT.md` ou instrucoes do proprio skill devem prevalecer conforme indicado.
-

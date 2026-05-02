@@ -31,4 +31,3 @@ flowchart TD
 Uma boa revisao cita arquivo e linha, descreve o comportamento que quebra, explica impacto e sugere correcao concreta. Ela nao deve gastar a primeira parte elogiando o codigo ou recontando o que o diff faz. O resumo vem depois dos achados, porque a prioridade e permitir acao imediata.
 
 Use o judge apenas para material de risco: DDL, IAM, RLS, SQL complexo, Terraform, contratos de dados ou workflow que possa afetar producao. Para documentacao simples, renomeacoes ou formatacao, a revisao normal e suficiente.
-

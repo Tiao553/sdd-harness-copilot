@@ -31,4 +31,3 @@ flowchart TD
 ## Quando usar
 
 Use quando a pergunta envolver arquitetura, workflow, dependencia, comparacao de opcoes, explicacao para terceiros ou documentacao visual. Evite quando uma tabela ou um pequeno Mermaid em Markdown resolver melhor, especialmente se o destino for documentacao textual versionada em `docs/`.
-

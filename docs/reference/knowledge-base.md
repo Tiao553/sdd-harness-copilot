@@ -69,4 +69,3 @@ O quick-reference deve ser pequeno, acionavel e atualizado. Ele deve conter heur
 ## Ciclo de vida
 
 KBs nascem quando um padrao se torna recorrente, mudam quando um dominio evolui e devem ser revisadas quando ficarem antigas. O skill `/knowledge-commands` fornece o caminho operacional para criar, atualizar e refrescar esses dominios.
-

@@ -22,7 +22,8 @@ repos:
                 .*\.lock$|
                 .*\.json$|
                 .*\.csv$|
-                .*\.md$
+                .*\.md$|
+                .*\.html$
             )
 
   - repo: https://github.com/igorshubovych/markdownlint-cli

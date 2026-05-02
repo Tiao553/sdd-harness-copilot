@@ -411,6 +411,31 @@
       "agent": ".github/agents/architect.the-planner.agent.md",
       "kb": [],
       "category": "architect"
+    },
+    {
+      "id": "security-guardian",
+      "triggers": [
+        "commit",
+        "git commit",
+        "pre-commit",
+        "secret",
+        "leak",
+        "credential",
+        "security",
+        "segurança",
+        "vulnerabilidade",
+        "pii",
+        "audit",
+        "gitleaks",
+        "bandit",
+        "detect-private-key",
+        "commitar",
+        "commitar mudanças"
+      ],
+      "agent": ".github/agents/dev.security-guardian.agent.md",
+      "kb": [],
+      "category": "dev",
+      "note": "Always runs pre-commit as a gate before suggesting git commit. CRITICAL findings block commit."
     }
   ]
 }

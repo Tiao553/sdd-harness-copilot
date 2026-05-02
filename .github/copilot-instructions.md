@@ -4,132 +4,78 @@ This repository is an AgentSpec runtime for GitHub Copilot. Treat `.github/` as 
 
 ## Mandatory Grounding
 
-Before any operational response:
+**Before any operational response, read `.github/config/grounding.md`.** It owns all detailed rules: permissions policy, token budget strategy, skill priority, SDD lifecycle, pre-commit security gate, and commit rules.
 
-1. Read `.github/config/grounding.md`.
-2. If the user invokes `/<skill-folder>`, read `.github/skills/<skill-folder>/SKILL.md` first.
-3. If no skill is invoked, read `.github/config/routing.json` and select the route by intent.
-4. Read the selected agent file.
-5. Load only the route quick-reference KB unless the skill or agent explicitly requires more.
-6. Check `_meta/STATUS.md` and `_meta/CONTEXT.md` when present.
-
-Every operational response must start with this block:
+Every operational response must start with:
 
 ```markdown
-> **Specialist Activated:** `[Agent Name]`  
+> **Specialist Activated:** `[Agent Name]`
 > **Path:** `[Agent Path]`
 >
-> **Execution Grounding**W
+> **Execution Grounding**
 >
 > | Property | Value |
 > |---|---|
 > | Router | `✓` |
-> | Skill | `<nome\|none>` |
-> | Active Agent | `<nome\|N/A>` |
-> | Knowledge Base | `<dominio\|none>` |
+> | Skill | `<name\|none>` |
+> | Active Agent | `<name\|N/A>` |
+> | Knowledge Base | `<domain\|none>` |
 > | Files Loaded | `<n>` |
-> | Detected Project | `<nome detectado\|none>` |
-> | Execution Tier | `CRÍTICO \| IMPORTANTE \| PADRÃO` |
-> | Prompt Tokens | `~<estimativa>` |W
+> | Detected Project | `<detected name\|none>` |
+> | Execution Tier | `CRITICAL \| IMPORTANT \| STANDARD` |
+> | Prompt Tokens | `~<estimate>` |
 ```
 
-## Invocation Rules
-
-Skills are invoked by folder name:
+## Skill Invocation
 
 ```text
 /<skill-folder> /<command> <args>
 ```
 
-Use these formats:
-
-```text
-/workflow-commands /define ...
-/workflow-commands /design ...
-/workflow-commands /build ...
-/workflow-commands /validate ...
-/data-engineering-commands /schema ...
-/knowledge-commands /create-kb ...
-/review-commands /judge ...
-/visual-explainer /generate-web-diagram ...
-/core-commands /status
-```
+| Skill | Entry Command |
+|---|---|
+| `workflow-commands` | `/workflow-commands /define`, `/design`, `/build`, `/validate`, `/ship`, `/iterate`, `/brainstorm` |
+| `data-engineering-commands` | `/data-engineering-commands /pipeline`, `/schema`, `/sql-review` |
+| `knowledge-commands` | `/knowledge-commands /create-kb`, `/update-kb` |
+| `review-commands` | `/review-commands /review`, `/judge` |
+| `visual-explainer` | `/visual-explainer /generate-web-diagram` |
+| `core-commands` | `/core-commands /status`, `/memory` |
+| `create-skills` | `/create-skills` |
 
 Do not use `.claude/`, `/agentspec:*`, `#skill:*`, or `skill:*` conventions.
 
-## Workflow Control
+## SDD Workflow
 
-SDD workflow phases can only be started by `/workflow-commands`.
-
-If the user asks in natural language to run a workflow phase, answer with the exact command they should run. Do not start the phase implicitly.
+SDD phases can only be started via `/workflow-commands`. Respond with the exact command if asked in natural language.
 
 | Phase | Command | Agent |
 |---|---|---|
-| Brainstorm | `/workflow-commands /brainstorm` | `brainstorm-agent` |
-| Define | `/workflow-commands /define` | `define-agent` |
-| Design | `/workflow-commands /design` | `design-agent` |
-| Build | `/workflow-commands /build` | `build-agent` |
-| Validate | `/workflow-commands /validate` | `validate-agent` |
-| Ship | `/workflow-commands /ship` | `ship-agent` |
-| Iterate | `/workflow-commands /iterate` | `iterate-agent` |
+| 0 — Brainstorm | `/workflow-commands /brainstorm` | `workflow.brainstorm-agent` |
+| 1 — Define | `/workflow-commands /define` | `workflow.define-agent` |
+| 2 — Design | `/workflow-commands /design` | `workflow.design-agent` |
+| 3 — Build | `/workflow-commands /build` | `workflow.build-agent` |
+| 3.5 — Validate | `/workflow-commands /validate` | `workflow.validate-agent` |
+| 4 — Ship | `/workflow-commands /ship` | `workflow.ship-agent` |
+| Cross-phase | `/workflow-commands /iterate` | `workflow.iterate-agent` |
 
 ## Runtime Inventory
 
-- 62 agents + DEFAULT.AGENT.md under `.github/agents/` (flat layout, dot-prefixed categories)
-- 8 skills under `.github/skills/`
-- 26 KB domains under `.github/kb/`
-- Router and grounding under `.github/config/`
-- SDD templates, features, architecture contracts, and archives under `.github/sdd/`
+- **63 agents** + DEFAULT under `.github/agents/` (flat layout, dot-prefixed categories)
+- **7 skills** under `.github/skills/`
+- **26 KB domains** under `.github/kb/`
+- Router, grounding, and security settings under `.github/config/`
+- SDD templates, features, and archives under `.github/sdd/`
 
-## Agent Behavior
+See `AGENTS.md` for full inventory, build delegation patterns, and structure details.
 
-Use the routed agent as the active specialist. Follow that agent's quality gates, stop conditions, and escalation rules.
+## Security Gate
 
-Build work may delegate to specialist agents through Copilot's built-in `agent` tool and `runSubagent`. When delegating, pass the target artifact, purpose, relevant DESIGN context, required KB references, quality gates, and expected evidence.
+Before suggesting `git commit`, **always** delegate to `dev.security-guardian` to run `pre-commit run --all-files`. CRITICAL findings (secrets, credentials, private keys) block the commit. See grounding.md → Regras for the full policy.
 
-## Local Copilot Configuration
+## Git Commit Trailer
 
-This workspace ports the Antigravity `.gemini` local setup to Copilot/VS Code:
+Always include this trailer in commit messages:
 
-- MCP servers live in `.vscode/mcp.json`.
-- `context7` is for current framework and API documentation lookup.
-- `sequential-thinking` is for structured planning, debugging, and complex analysis.
-- `github` is for repository, pull request, issue, and code search integration.
-- Secrets must stay outside version control. Use `.env` for `GITHUB_PERSONAL_ACCESS_TOKEN`.
-
-### Execution Policy
-
-Copilot must read `.github/config/security-settings.json` when present and enforce its full `permissions` policy before command execution:
-
-- `permissions.alwaysAllow`: safe inspection, read-only discovery, and local validation commands.
-- `permissions.alwaysAsk`: state-changing, dependency-changing, Git history, deployment, Docker lifecycle, and file-moving commands.
-- `permissions.alwaysDeny`: destructive filesystem operations, high-risk database operations, force-push/reset/clean, package unpublish, system/service/registry/process termination commands.
-
-If a command is ambiguous or appears in multiple categories by partial match, apply the most restrictive category. For chained commands, evaluate each segment and apply the most restrictive category to the whole execution.
-
-## Knowledge Base Policy
-
-Use KB lazily:
-
-1. Prefer `.github/kb/{domain}/quick-reference.md`.
-2. Load `index.md`, `concepts/`, `patterns/`, or `specs/` only when the quick reference is insufficient.
-3. Never load an entire KB domain by default.
-4. For external or version-sensitive technology decisions, validate against current official docs when the skill or agent requires it.
-
-## Documentation Policy
-
-Keep public documentation focused on AgentSpec: runtime architecture, skill commands, agents, KB domains, workflow phases, routing, validation, and extension points.
-
-README should stay concise. Detailed inventories and walkthroughs belong under `docs/`.
-
-## Validation
-
-Use `python3`, not `python`:
-
-```bash
-find .github/agents -name "*.agent.md" | wc -l
-find .github/kb -name "quick-reference.md" | wc -l
-find .github/skills -maxdepth 2 -iname "SKILL.md" | sort
-python3 -m json.tool .github/config/routing.json
-python3 -m pytest tests
+```
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 ```

@@ -34,4 +34,3 @@ flowchart TD
 O arquivo visual deve ser legivel, responsivo e fiel ao dominio. Diagramas complexos nao devem ser espremidos em um unico Mermaid ilegivel; e melhor combinar uma visao topologica pequena com detalhes em secoes. As cores, tipografia e espacamento precisam apoiar a compreensao, nao apenas decorar.
 
 Use este skill quando o publico precisa entender relacoes, riscos e decisoes rapidamente. Para documentacao de referencia permanente em `docs/`, Markdown com Mermaid costuma ser mais facil de versionar; para apresentacao, ensino e alinhamento, HTML visual e melhor.
-

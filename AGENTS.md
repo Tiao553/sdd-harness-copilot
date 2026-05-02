@@ -40,6 +40,7 @@ Workflow phases can only start through `/workflow-commands`.
 | 1 - Define | `/workflow-commands /define ...` | `workflow.define-agent` | `DEFINE_{FEATURE}.md` |
 | 2 - Design | `/workflow-commands /design ...` | `workflow.design-agent` | `DESIGN_{FEATURE}.md` |
 | 3 - Build | `/workflow-commands /build ...` | `workflow.build-agent` | code + `BUILD_REPORT_{FEATURE}.md` |
+| 3.5 - Validate | `/workflow-commands /validate ...` | `workflow.validate-agent` | `VALIDATION_REPORT_{FEATURE}.md` |
 | 4 - Ship | `/workflow-commands /ship ...` | `workflow.ship-agent` | `SHIPPED_{DATE}.md` |
 | Cross-phase | `/workflow-commands /iterate ...` | `workflow.iterate-agent` | updated SDD doc |
 
@@ -77,10 +78,10 @@ agentspec/
 
 | Area | Count | Notes |
 |---|---:|---|
-| Agents | 62 + 1 DEFAULT | Flat layout in `.github/agents/` (dot-prefixed categories) |
+| Agents | 63 + 1 DEFAULT | Flat layout in `.github/agents/` (dot-prefixed categories) |
 | Skills | 7 | Folder-invoked commands under `.github/skills/` |
 | KB domains | 26 | Domain folders under `.github/kb/` excluding `_templates` |
-| SDD workflow agents | 6 | Brainstorm, define, design, build, ship, iterate |
+| SDD workflow agents | 6 | Brainstorm, define, design, build, validate, ship, iterate |
 
 Agent categories:
 
@@ -89,7 +90,7 @@ Agent categories:
 | architect | 8 |
 | cloud | 11 |
 | data-engineering | 15 |
-| dev | 6 |
+| dev | 7 |
 | platform | 6 |
 | python | 6 |
 | test | 3 |
@@ -97,14 +98,26 @@ Agent categories:
 
 ## Build And Validation
 
-Use `python3`; `python` may not exist in this environment.
+Use `python3`; `python` may not exist in this environment. On Windows, use PowerShell equivalents:
 
-```bash
-find .github/agents -name "*.agent.md" | wc -l
-find .github/kb -name "quick-reference.md" | wc -l
+```powershell
+# Count agents
+(Get-ChildItem .github/agents -Filter "*.agent.md").Count
+
+# Count KB quick-references
+(Get-ChildItem .github/kb -Recurse -Filter "quick-reference.md").Count
+
+# Validate routing.json
 python3 -m json.tool .github/config/routing.json
-find .github/skills -maxdepth 2 -name SKILL.md | sort
-find projects -maxdepth 2 -type f | sort
+
+# List skill SKILL.md files
+Get-ChildItem .github/skills -Recurse -Filter "SKILL.md" | Select-Object FullName
+
+# List generated project files
+Get-ChildItem projects -Recurse -File | Select-Object FullName
+
+# Run tests (when present)
+python3 -m pytest tests
 ```
 
 ## Build Delegation
@@ -125,6 +138,17 @@ For delegated files, the build must:
 - Enforce the assigned agent quality gates.
 - Record evidence in `BUILD_REPORT_{FEATURE}.md`.
 - Write generated files under `projects/{feature-name}/`.
+
+## Security
+
+The `dev.security-guardian` agent enforces a mandatory pre-commit gate before any `git commit`:
+
+1. Runs `pre-commit run --all-files` (hooks: gitleaks, bandit, detect-private-key, check-yaml)
+2. Analyzes `git diff --staged` for secrets, PII, and credentials
+3. Reports with severity: CRITICAL (blocks commit) / WARNING (asks confirmation) / INFO (informational)
+4. Suggests Conventional Commit message after gate passes
+
+Triggers automatically for intents involving: `commit`, `secret`, `leak`, `credential`, `segurança`, `pii`, `audit`.
 
 ## Local Analytics Stack
 

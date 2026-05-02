@@ -68,7 +68,7 @@
 
 **Choice:** Docker Compose with explicit resource limits per service.
 
-**Rationale:** 
+**Rationale:**
 - Single `docker-compose up` command for zero-setup startup
 - Resource limits ensure consistent performance across machines
 - Easy replication via git clone + docker-compose up
@@ -316,7 +316,7 @@ with DAG(
 ) as dag:
     run_task = run_dbt_models()
     test_task = test_dbt_models()
-    
+
     run_task >> test_task
 ```
 
@@ -335,10 +335,10 @@ import click
 def generate_data(entity, count, seed):
     fake = Faker()
     fake.seed_instance(seed)
-    
+
     conn = psycopg2.connect("host=localhost dbname=analytics user=postgres password=postgres")
     cur = conn.cursor()
-    
+
     if entity == 'customers':
         for _ in range(count):
             cur.execute("""
@@ -350,7 +350,7 @@ def generate_data(entity, count, seed):
                 fake.email(),
                 fake.date_between(start_date='-2y')
             ))
-    
+
     conn.commit()
     cur.close()
     conn.close()

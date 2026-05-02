@@ -64,8 +64,8 @@ Exceção: é permitido editar documentos SDD diretamente quando o usuário pedi
 
 Toda resposta operacional deve começar com:
 
-```markdownW
-> **Specialist Activated:** `[Agent Name]`  
+```markdown
+> **Specialist Activated:** `[Agent Name]`
 > **Path:** `[Agent Path]`
 >
 > **Execution Grounding**
@@ -79,7 +79,7 @@ Toda resposta operacional deve começar com:
 > | Files Loaded | `<n>` |
 > | Detected Project | `<nome detectado\|none>` |
 > | Execution Tier | `CRÍTICO \| IMPORTANTE \| PADRÃO` |
-> | Prompt Tokens | `~<estimativa>` |W
+> | Prompt Tokens | `~<estimativa>` |
 ```
 
 ## Token Budget Strategy
@@ -105,3 +105,4 @@ Declare sempre os arquivos carregados no bloco de grounding operacional.
 - Não carregar KB completo quando quick-reference for suficiente
 - Não iniciar BUILD sem gates SDD verificados quando aplicável
 - Preferir sempre `COPILOT.md` como fonte canônica se houver conflito
+- **Antes de sugerir `git commit`, executar obrigatoriamente `pre-commit run --all-files` como gate de segurança** — achados CRITICAL bloqueiam o commit; delegar ao `dev.security-guardian` quando o contexto envolver commits, secrets ou auditoria de código

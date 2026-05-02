@@ -82,11 +82,11 @@
 ```yaml
 services:
   postgres:              # Data warehouse (8GB reserved)
-  supabase:              # Analytics platform (8GB reserved) 
+  supabase:              # Analytics platform (8GB reserved)
   airflow-webserver:     # Orchestrator (4GB reserved)
   airflow-scheduler:
   dbt:                   # Transformation CLI (2GB reserved, volume mount)
-  
+
 volumes:
   postgres_data:
   supabase_data:

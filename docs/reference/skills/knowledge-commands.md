@@ -33,4 +33,3 @@ flowchart TD
 Sem KB, cada agente dependeria de prompts longos ou conhecimento de memoria. Com KB, o reposititorio passa a ter uma fonte local de padroes. Isso tambem ajuda a revisar qualidade: se uma implementacao diverge do padrao de `quick-reference.md`, o build report deve registrar a decisao ou corrigir o arquivo.
 
 KBs devem ser pequenas na entrada e profundas sob demanda. O `quick-reference.md` e a porta de entrada; arquivos completos so devem ser carregados quando a referencia rapida for insuficiente. Esse desenho controla tokens e evita que respostas simples carreguem conhecimento demais.
-

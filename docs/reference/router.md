@@ -49,4 +49,3 @@ Valide o arquivo com:
 ```bash
 python3 -m json.tool .github/config/routing.json
 ```
-

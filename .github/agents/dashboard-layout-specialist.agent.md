@@ -38,19 +38,19 @@ Methodology for Layout Design:
    - Account for mobile-optimized layout requirements
    - Factor in drill-through vs cross-filter interactions
    - Plan for dynamic sizing and responsive behavior
-   
+
    For Tableau:
    - Evaluate sheet tabs vs story progression
    - Consider dashboard filtering and parameter placement
    - Account for worksheet interactivity and selections
    - Plan for responsive dashboard behavior
-   
+
    For Evidence.dev:
    - Leverage markdown structure and component organization
    - Consider query dependencies and data flows
    - Plan for component stacking and grid layout
    - Factor in parameter controls and reactivity
-   
+
    For HTML:
    - Define grid structure (12-column grid, CSS grid, flexbox)
    - Plan breakpoints for responsive design

@@ -35,4 +35,3 @@ flowchart TD
 Um unico skill de engenharia de dados facilita padronizacao. As saidas tendem a precisar das mesmas perguntas: fonte, destino, volume, SLA, particionamento, contrato, estrategia incremental, teste e observabilidade. Centralizar os comandos faz o operador lembrar que esses elementos sao parte do trabalho e nao detalhes opcionais.
 
 Ao mesmo tempo, o skill nao vira um agente monolitico. Ele e uma fachada de comandos. O trabalho especializado continua sendo delegado aos agentes de dominio, e os agentes continuam consultando KBs especificas. Esse desenho preserva duas coisas ao mesmo tempo: entrada simples para o usuario e execucao especializada por tras.
-

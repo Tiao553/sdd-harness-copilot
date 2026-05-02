@@ -48,4 +48,3 @@ flowchart LR
 ## Regra de Ship
 
 Ship deve exigir `VALIDATION_REPORT_{FEATURE}.md` e deve bloquear se houver CRITICAL issue ou score abaixo de 90. Quando o resultado e remediation, o caminho correto e corrigir a implementacao, atualizar `BUILD_REPORT` quando necessario e rodar `/workflow-commands /validate` novamente.
-

@@ -8,7 +8,7 @@ __pycache__/
 # Test files and directories
 *.test
 *.my
-.env 
+.env
 
 # Python
 __pycache__/

@@ -1,37 +1,37 @@
 # Data Engineering Commands Skill
 
-O skill `/data-engineering-commands` concentra comandos de engenharia de dados que exigem especialistas, KBs de dominio e artefatos tecnicos. Ele existe para impedir que pedidos de pipeline, schema, qualidade, migracao ou lakehouse sejam tratados como tarefas genericas de codigo. Em vez disso, cada subcomando aponta para um agente e para dominios de conhecimento que ja codificam boas praticas locais.
+The `/data-engineering-commands` skill concentrates data engineering commands that require specialists, domain KBs, and technical artifacts. It exists to prevent pipeline, schema, quality, migration, or lakehouse requests from being treated as generic coding tasks. Instead, each subcommand points to an agent and knowledge domains that already encode local best practices.
 
-Esse skill e especialmente importante porque engenharia de dados costuma cruzar varias fronteiras: modelagem, orquestracao, qualidade, contratos, cloud, SQL, streaming e AI pipelines. O agrupamento reduz a chance de uma solucao incompleta, por exemplo criar um DAG sem contrato de freshness, uma tabela sem estrategia de particionamento ou uma migracao sem plano de compatibilidade.
+This skill is especially important because data engineering often crosses multiple boundaries: modeling, orchestration, quality, contracts, cloud, SQL, streaming, and AI pipelines. The grouping reduces the chance of an incomplete solution — for example, creating a DAG without a freshness contract, a table without a partitioning strategy, or a migration without a compatibility plan.
 
-## Comandos
+## Commands
 
-| Comando | Foco | Agentes comuns | KBs comuns |
+| Command | Focus | Common agents | Common KBs |
 |---|---|---|---|
-| `/pipeline` | Arquitetura e implementacao de pipelines | `pipeline-architect`, `airflow-specialist` | `airflow`, `streaming`, `modern-stack` |
-| `/schema` | Modelagem dimensional, Data Vault, SCD e evolucao | `schema-designer` | `data-modeling`, `sql-patterns` |
-| `/data-quality` | Testes, expectativas, SLAs e observabilidade | `data-quality-analyst` | `data-quality`, `dbt` |
-| `/lakehouse` | Delta, Iceberg, catalogos e governanca | `lakehouse-architect` | `lakehouse`, `medallion` |
-| `/sql-review` | Revisao e otimizacao de SQL | `sql-optimizer` | `sql-patterns` |
-| `/ai-pipeline` | RAG, embeddings, feature store e LLMOps | `ai-data-engineer` | `ai-data-engineering`, `genai` |
-| `/data-contract` | Contratos ODCS, SLA e governanca produtor-consumidor | `data-contracts-engineer` | `data-quality`, `data-modeling` |
-| `/migrate` | Migracoes de plataforma, schema ou pipeline | Especialista por dominio | KB do dominio alvo |
+| `/pipeline` | Pipeline architecture and implementation | `pipeline-architect`, `airflow-specialist` | `airflow`, `streaming`, `modern-stack` |
+| `/schema` | Dimensional modeling, Data Vault, SCD, and evolution | `schema-designer` | `data-modeling`, `sql-patterns` |
+| `/data-quality` | Tests, expectations, SLAs, and observability | `data-quality-analyst` | `data-quality`, `dbt` |
+| `/lakehouse` | Delta, Iceberg, catalogs, and governance | `lakehouse-architect` | `lakehouse`, `medallion` |
+| `/sql-review` | SQL review and optimization | `sql-optimizer` | `sql-patterns` |
+| `/ai-pipeline` | RAG, embeddings, feature store, and LLMOps | `ai-data-engineer` | `ai-data-engineering`, `genai` |
+| `/data-contract` | ODCS contracts, SLA, and producer-consumer governance | `data-contracts-engineer` | `data-quality`, `data-modeling` |
+| `/migrate` | Platform, schema, or pipeline migrations | Domain specialist | Target domain KB |
 
-## Fluxo
+## Flow
 
 ```mermaid
 flowchart TD
-    A["Pedido de dados"] --> B["/data-engineering-commands"]
-    B --> C{"Subcomando"}
-    C --> D["Seleciona agente primario"]
-    D --> E["Carrega KB quick-reference"]
-    E --> F["Analisa artefato ou descricao"]
-    F --> G["Gera plano, codigo, YAML, SQL ou contrato"]
-    G --> H["Inclui validacoes e trade-offs"]
+    A["Data request"] --> B["/data-engineering-commands"]
+    B --> C{"Subcommand"}
+    C --> D["Select primary agent"]
+    D --> E["Load KB quick-reference"]
+    E --> F["Analyze artifact or description"]
+    F --> G["Generate plan, code, YAML, SQL, or contract"]
+    G --> H["Include validations and trade-offs"]
 ```
 
-## Por que ter um skill unico
+## Why have a single skill
 
-Um unico skill de engenharia de dados facilita padronizacao. As saidas tendem a precisar das mesmas perguntas: fonte, destino, volume, SLA, particionamento, contrato, estrategia incremental, teste e observabilidade. Centralizar os comandos faz o operador lembrar que esses elementos sao parte do trabalho e nao detalhes opcionais.
+A single data engineering skill makes standardization easier. The outputs tend to need the same questions: source, destination, volume, SLA, partitioning, contract, incremental strategy, testing, and observability. Centralizing the commands reminds the operator that these elements are part of the work, not optional details.
 
-Ao mesmo tempo, o skill nao vira um agente monolitico. Ele e uma fachada de comandos. O trabalho especializado continua sendo delegado aos agentes de dominio, e os agentes continuam consultando KBs especificas. Esse desenho preserva duas coisas ao mesmo tempo: entrada simples para o usuario e execucao especializada por tras.
+At the same time, the skill does not become a monolithic agent. It is a command façade. The specialized work continues to be delegated to domain agents, and the agents continue to consult specific KBs. This design preserves two things simultaneously: a simple entry point for the user and specialized execution behind the scenes.

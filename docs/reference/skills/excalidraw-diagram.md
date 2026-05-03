@@ -1,33 +1,33 @@
 # Excalidraw Diagram Skill
 
-O skill `/excalidraw-diagram` cria diagramas `.excalidraw` para explicar arquitetura, fluxo, conceito ou decisao. Ele nao e apenas um gerador de caixas e setas; sua regra central e que o diagrama precisa argumentar visualmente. A estrutura, os agrupamentos, as setas e os exemplos concretos devem carregar significado mesmo antes da leitura de todo o texto.
+The `/excalidraw-diagram` skill creates `.excalidraw` diagrams to explain architecture, flow, concepts, or decisions. It is not merely a box-and-arrow generator; its central rule is that the diagram must make a visual argument. The structure, groupings, arrows, and concrete examples must carry meaning even before the full text is read.
 
-Ele existe porque alguns problemas sao mais bem entendidos como topologia, sequencia, dependencia ou contraste. Um README pode explicar que grounding vem antes de routing, mas um diagrama mostra a ordem, os bloqueios e as excecoes de forma imediata. Em sistemas com agentes, skills, KBs e workflow, esse tipo de visualizacao reduz ambiguidade operacional.
+It exists because some problems are better understood as topology, sequence, dependency, or contrast. A README can explain that grounding comes before routing, but a diagram shows the order, the blocks, and the exceptions immediately. In systems with agents, skills, KBs, and workflow, this type of visualization reduces operational ambiguity.
 
-## Principios
+## Principles
 
-| Principio | Efeito pratico |
+| Principle | Practical effect |
 |---|---|
-| Isomorfismo | A forma deve refletir o comportamento do sistema |
-| Evidencia concreta | Diagramas tecnicos devem mostrar exemplos reais de payload, comando, arquivo ou evento |
-| Multinivel | Combinar visao geral, regioes e detalhes internos |
-| Texto com proposito | Evitar blocos decorativos que so repetem o que o titulo ja disse |
-| Validacao visual | Gerar arquivo utilizavel e legivel, nao apenas JSON valido |
+| Isomorphism | Shape should reflect system behavior |
+| Concrete evidence | Technical diagrams must show real examples of payload, command, file, or event |
+| Multi-level | Combine overview, regions, and internal details |
+| Purposeful text | Avoid decorative blocks that only repeat what the title already said |
+| Visual validation | Generate a usable and readable file, not just valid JSON |
 
-## Fluxo
+## Flow
 
 ```mermaid
 flowchart TD
-    A["Solicitacao de diagrama"] --> B["Definir profundidade"]
-    B --> C{"Conceitual ou tecnico?"}
-    C --> D["Conceitual<br/>formas abstratas"]
-    C --> E["Tecnico<br/>pesquisa e evidencias"]
-    D --> F["Criar composicao visual"]
+    A["Diagram request"] --> B["Define depth"]
+    B --> C{"Conceptual or technical?"}
+    C --> D["Conceptual<br/>abstract shapes"]
+    C --> E["Technical<br/>research and evidence"]
+    D --> F["Create visual composition"]
     E --> F
-    F --> G["Gerar .excalidraw"]
-    G --> H["Validar legibilidade"]
+    F --> G["Generate .excalidraw"]
+    G --> H["Validate readability"]
 ```
 
-## Quando usar
+## When to use
 
-Use quando a pergunta envolver arquitetura, workflow, dependencia, comparacao de opcoes, explicacao para terceiros ou documentacao visual. Evite quando uma tabela ou um pequeno Mermaid em Markdown resolver melhor, especialmente se o destino for documentacao textual versionada em `docs/`.
+Use when the question involves architecture, workflow, dependency, option comparison, explanation for others, or visual documentation. Avoid when a table or a small Mermaid in Markdown would work better, especially if the destination is text-based versioned documentation in `docs/`.

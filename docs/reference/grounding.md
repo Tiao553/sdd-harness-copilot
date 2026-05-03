@@ -1,50 +1,50 @@
 # Grounding
 
-O grounding em `.github/config/grounding.md` e o contrato inicial de toda resposta operacional neste workspace. Ele define a ordem de leitura, a prioridade de skills, o uso do router, o carregamento minimo de KB e o bloco que deve abrir respostas operacionais. Seu papel e impedir que o assistente responda de memoria quando deveria estar ancorado nos arquivos do repositorio.
+The grounding file at `.github/config/grounding.md` is the initial contract for every operational response in this workspace. It defines the reading order, skill priority, router usage, minimal KB loading, and the block that must open operational responses. Its purpose is to prevent the assistant from responding from memory when it should be anchored to the repository's files.
 
-Ter um arquivo unico de grounding e importante porque todas as outras partes dependem dele. Skills, router, agentes, KBs e workflow podem evoluir, mas todos precisam concordar sobre a sequencia basica de execucao. Se cada skill definisse sua propria regra inicial, o runtime ficaria inconsistente e dificil de debugar.
+Having a single grounding file matters because every other part depends on it. Skills, router, agents, KBs, and workflow can evolve, but all of them must agree on the basic execution sequence. If each skill defined its own initial rule, the runtime would become inconsistent and difficult to debug.
 
-## Ordem obrigatoria
+## Mandatory order
 
 ```mermaid
 flowchart TD
-    A["Antes da resposta operacional"] --> B["Ler grounding.md"]
-    B --> C{"Skill /nome invocado?"}
-    C -->|sim| D["Ler .github/skills/{nome}/SKILL.md"]
-    D --> E["Seguir grounding do skill"]
-    C -->|nao| F["Ler routing.json"]
-    F --> G["Escolher agente por intent"]
-    E --> H["Ler agente requerido"]
+    A["Before operational response"] --> B["Read grounding.md"]
+    B --> C{"Skill /name invoked?"}
+    C -->|yes| D["Read .github/skills/{name}/SKILL.md"]
+    D --> E["Follow skill grounding"]
+    C -->|no| F["Read routing.json"]
+    F --> G["Select agent by intent"]
+    E --> H["Read required agent"]
     G --> H
-    H --> I["Carregar KB minima"]
-    I --> J["Verificar _meta se existir"]
-    J --> K["Responder com bloco de grounding"]
+    H --> I["Load minimal KB"]
+    I --> J["Check _meta if it exists"]
+    J --> K["Respond with grounding block"]
 ```
 
-## Bloco de grounding
+## Grounding block
 
-O bloco inicial declara o especialista ativado, caminho do agente, skill, KB, arquivos carregados, projeto detectado, tier e uso de budget. Ele funciona como recibo de execucao: quem le a resposta consegue saber de onde a decisao veio e quais fontes locais foram usadas.
+The opening block declares the activated specialist, agent path, skill, KB, loaded files, detected project, tier, and budget usage. It functions as an execution receipt: whoever reads the response can tell where the decision came from and which local sources were used.
 
-## Por que ele existe
+## Why it exists
 
-Grounding resolve quatro problemas recorrentes em repositorios com agentes:
+Grounding solves four recurring problems in repositories with agents:
 
-| Problema | Como grounding ajuda |
+| Problem | How grounding helps |
 |---|---|
-| Resposta fora de contexto | Obriga leitura de arquivos locais antes de operar |
-| Skill ignorado | Define prioridade absoluta para invocacao por `/skill-folder` |
-| KB carregada demais | Exige quick-reference e limite de arquivos |
-| Workflow iniciado errado | Bloqueia fases SDD sem `/workflow-commands /<fase>` |
+| Out-of-context response | Forces reading of local files before operating |
+| Ignored skill | Defines absolute priority for invocation via `/skill-folder` |
+| Over-loaded KB | Requires quick-reference and a file limit |
+| Incorrectly started workflow | Blocks SDD phases without `/workflow-commands /<phase>` |
 
-## Relacao com skills e router
+## Relationship with skills and router
 
 ```mermaid
 flowchart LR
-    A["grounding.md<br/>protocolo"] --> B["skills<br/>comandos explicitos"]
-    A --> C["router<br/>intencao implicita"]
-    B --> D["agentes"]
+    A["grounding.md<br/>protocol"] --> B["skills<br/>explicit commands"]
+    A --> C["router<br/>implicit intent"]
+    B --> D["agents"]
     C --> D
-    D --> E["KB minima"]
+    D --> E["minimal KB"]
 ```
 
-O grounding nao escolhe todos os detalhes; ele garante que a escolha aconteca no lugar certo. Se houver skill, o skill manda. Se nao houver skill, o router decide. Se houver conflito, arquivos canonicos como `COPILOT.md` ou instrucoes do proprio skill devem prevalecer conforme indicado.
+Grounding does not choose all the details; it ensures the choice happens in the right place. If there is a skill, the skill takes precedence. If there is no skill, the router decides. If there is a conflict, canonical files such as `COPILOT.md` or the skill's own instructions should prevail as indicated.

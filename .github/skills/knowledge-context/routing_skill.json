@@ -1,0 +1,36 @@
+{
+  "skill": "knowledge-context-commands",
+  "priority": "high",
+  "commands": {
+    "/create-context": {
+      "file": "commands/create-context.md",
+      "agent": null,
+      "input": "Project slug and optional project name/description",
+      "output": ".github/knowledge_context/{slug}/ with KNOWLEDGE_CONTEXT.md and all template files + registry entry"
+    },
+    "/update-context": {
+      "file": "commands/update-context.md",
+      "agent": null,
+      "input": "Project slug and optional --file flag to target a specific context file",
+      "output": "Updated context files for the target project"
+    },
+    "/check-context": {
+      "file": "commands/check-context.md",
+      "agent": null,
+      "input": "Optional project slug (defaults to active_project in registry)",
+      "output": "Context audit report with gap analysis and health score"
+    }
+  },
+  "conditions": [
+    "User invokes /knowledge-context-commands",
+    "User asks to create, update, or check a project context",
+    "Knowledge context setup or audit requested",
+    "User references deployment_context, architecture context, or project rules"
+  ],
+  "dependencies": [
+    ".github/config/grounding.md",
+    ".github/config/routing.json",
+    ".github/knowledge_context/_registry.yaml",
+    ".github/knowledge_context/_templates/"
+  ]
+}

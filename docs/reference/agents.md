@@ -1,43 +1,43 @@
 # Agents
 
-Os agentes em `.github/agents/` sao papeis especializados que transformam uma intencao roteada em uma postura operacional. Eles nao sao apenas nomes de personas; cada arquivo declara dominio, ferramentas esperadas, thresholds, gates e regras de qualidade. O router escolhe o agente inicial, e o workflow pode delegar partes de uma implementacao para agentes mais especificos.
+Agents in `.github/agents/` are specialized roles that transform a routed intent into an operational stance. They are not just persona names; each file declares a domain, expected tools, thresholds, gates, and quality rules. The router selects the initial agent, and the workflow can delegate parts of an implementation to more specific agents.
 
-Ter agentes separados e importante porque o mesmo pedido pode exigir raciocinios diferentes. Um `schema-designer` pensa em modelagem, evolucao e SCD; um `sql-optimizer` pensa em plano de consulta e dialeto; um `container-specialist` pensa em imagens, Compose, tags e validacao. Separar papeis reduz prompts gigantes e torna cada contrato auditavel em arquivo proprio.
+Having separate agents matters because the same request may require different reasoning styles. A `schema-designer` thinks in terms of modeling, evolution, and SCD; a `sql-optimizer` thinks in terms of query plans and dialects; a `container-specialist` thinks in terms of images, Compose, tags, and validation. Separating roles reduces bloated prompts and makes each contract auditable in its own file.
 
-## Mapa operacional
+## Operational map
 
 ```mermaid
 flowchart TD
-    A["Pedido do usuario"] --> B["grounding.md"]
-    B --> C{"Skill invocado?"}
-    C -->|sim| D[".github/skills/{skill}/SKILL.md"]
-    C -->|nao| E["routing.json"]
-    D --> F["Agente definido pelo skill"]
-    E --> G["Agente por intent"]
-    F --> H["KB minima"]
+    A["User request"] --> B["grounding.md"]
+    B --> C{"Skill invoked?"}
+    C -->|yes| D[".github/skills/{skill}/SKILL.md"]
+    C -->|no| E["routing.json"]
+    D --> F["Agent defined by skill"]
+    E --> G["Agent by intent"]
+    F --> H["Minimal KB"]
     G --> H
-    H --> I["Resposta, artefato ou edicao"]
-    I --> J{"Build com manifest?"}
-    J -->|sim| K["Delegacao @{agent-name}"]
-    J -->|nao| L["Conclusao direta"]
+    H --> I["Response, artifact, or edit"]
+    I --> J{"Build with manifest?"}
+    J -->|yes| K["Delegation @{agent-name}"]
+    J -->|no| L["Direct conclusion"]
 ```
 
-## Categorias
+## Categories
 
-| Categoria | Quantidade | Uso principal |
+| Category | Count | Primary use |
 |---|---:|---|
-| `architect` | 8 | Planejamento, arquitetura, schemas, KB, medallion, lakehouse e GenAI |
-| `cloud` | 11 | AWS, GCP, containers, CI/CD, Lambda, Supabase e deploy |
-| `data-engineering` | 15 | dbt, Airflow, Spark, Lakeflow, SQL, streaming, Qdrant e pipelines de dados |
-| `dev` | 6 | Router, exploracao, judge, reunioes, prompts e shell |
-| `platform` | 6 | Microsoft Fabric: arquitetura, seguranca, pipelines, logging, AI e CI/CD |
-| `python` | 6 | Desenvolvimento Python, documentacao, revisao, prompts e LLM |
-| `test` | 3 | Testes, qualidade de dados e contratos |
-| `workflow` | 7 | Brainstorm, Define, Design, Build, Validate, Ship e Iterate |
+| `architect` | 8 | Planning, architecture, schemas, KB, medallion, lakehouse, and GenAI |
+| `cloud` | 11 | AWS, GCP, containers, CI/CD, Lambda, Supabase, and deployments |
+| `data-engineering` | 15 | dbt, Airflow, Spark, Lakeflow, SQL, streaming, Qdrant, and data pipelines |
+| `dev` | 6 | Router, exploration, judge, meetings, prompts, and shell |
+| `platform` | 6 | Microsoft Fabric: architecture, security, pipelines, logging, AI, and CI/CD |
+| `python` | 6 | Python development, documentation, review, prompts, and LLM |
+| `test` | 3 | Testing, data quality, and contracts |
+| `workflow` | 7 | Brainstorm, Define, Design, Build, Validate, Ship, and Iterate |
 
-## Catalogo resumido
+## Summarized catalog
 
-| Categoria | Agentes |
+| Category | Agents |
 |---|---|
 | `architect` | `data-platform-engineer`, `genai-architect`, `kb-architect`, `lakehouse-architect`, `medallion-architect`, `pipeline-architect`, `schema-designer`, `the-planner` |
 | `cloud` | `ai-data-engineer-cloud`, `ai-data-engineer-gcp`, `ai-prompt-specialist-gcp`, `aws-data-architect`, `aws-deployer`, `aws-lambda-architect`, `ci-cd-specialist`, `container-specialist`, `gcp-data-architect`, `lambda-builder`, `supabase-specialist` |
@@ -48,26 +48,26 @@ flowchart TD
 | `test` | `data-contracts-engineer`, `data-quality-analyst`, `test-generator` |
 | `workflow` | `brainstorm-agent`, `define-agent`, `design-agent`, `build-agent`, `validate-agent`, `ship-agent`, `iterate-agent` |
 
-## Como um agente deve ser usado
+## How an agent should be used
 
-Um agente deve ser lido antes de executar uma resposta operacional roteada para ele. A leitura importa porque o arquivo do agente pode conter gates que nao aparecem no nome. Por exemplo, o build-agent exige manifesto, caminhos sob `projects/{feature-name}/`, evidencias por especialista e build report; o ship-agent exige artefatos completos e validacao antes de arquivar.
+An agent must be read before executing an operational response routed to it. Reading matters because the agent file may contain gates that do not appear in the name. For example, the build-agent requires a manifest, paths under `projects/{feature-name}/`, evidence per specialist, and a build report; the ship-agent requires complete artifacts and validation before archiving.
 
-O agente inicial nao deve carregar todo o repositorio. O padrao e carregar grounding, router ou skill, agente selecionado, KB minima e meta-contexto quando existir. Esse modelo reduz custo cognitivo e evita que uma resposta simples vire uma leitura indiscriminada de todos os dominios.
+The initial agent should not load the entire repository. The pattern is to load grounding, router or skill, selected agent, minimal KB, and meta-context when it exists. This model reduces cognitive cost and prevents a simple response from becoming an indiscriminate read of all domains.
 
-## Delegacao
+## Delegation
 
 ```mermaid
 sequenceDiagram
     participant Build as build-agent
     participant Design as DESIGN
-    participant Specialist as agente especialista
+    participant Specialist as specialist agent
     participant Report as BUILD_REPORT
 
-    Build->>Design: le manifest e atribuicoes @{agent-name}
-    Build->>Specialist: envia tarefa, caminho, KB e gates
-    Specialist-->>Build: retorna arquivo e evidencias
-    Build->>Report: registra PASS/FAIL/N/A por gate
-    Build-->>Build: verifica saida antes de concluir
+    Build->>Design: reads manifest and @{agent-name} assignments
+    Build->>Specialist: sends task, path, KB, and gates
+    Specialist-->>Build: returns file and evidence
+    Build->>Report: records PASS/FAIL/N/A per gate
+    Build-->>Build: verifies output before concluding
 ```
 
-Delegacao nao e terceirizacao cega. O build-agent continua responsavel por resolver caminhos, conferir gates e registrar evidencia. O especialista e responsavel pelo conhecimento de dominio e pela producao do arquivo dentro do escopo atribuido.
+Delegation is not blind outsourcing. The build-agent remains responsible for resolving paths, checking gates, and recording evidence. The specialist is responsible for domain knowledge and producing the file within the assigned scope.

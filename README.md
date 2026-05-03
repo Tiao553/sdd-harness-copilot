@@ -1,4 +1,4 @@
-# AgentSpec
+# Spec Driven Developing for Copilot
 
 AgentSpec is a GitHub Copilot operating layer for spec-driven development. It transforms any repository into a routed multi-agent workspace where every response is grounded through a mandatory context protocol, intent is matched to the right specialist agent, slash-style skills expose structured command groups, 26 local knowledge-base domains provide on-demand reference material, and a full SDD (Spec-Driven Development) workflow carries features from initial brainstorm through validated build to shipped archive — all inside your IDE.
 
@@ -10,9 +10,10 @@ AgentSpec is a GitHub Copilot operating layer for spec-driven development. It tr
 |---|---|
 | **Grounding** | Forces every operational response through `.github/config/grounding.md`, ensuring the AI always loads mandatory context, security policy, and execution-tier metadata before acting |
 | **Routing** | Maps user intent to the correct specialist agent via `.github/config/routing.json`, so requests reach domain experts automatically |
-| **Skills** | Exposes 9 slash-invoked command groups — workflow, data engineering, knowledge management, review, core utilities, validation, visual explanation, Excalidraw diagrams, and skill scaffolding — with `routing_skill.json` for machine-readable command dispatch |
+| **Skills** | Exposes 10 slash-invoked command groups — workflow, knowledge context, data engineering, knowledge management, review, core utilities, validation, visual explanation, Excalidraw diagrams, and skill scaffolding — with `routing_skill.json` for machine-readable command dispatch |
 | **Agents** | Provides 62 specialist agent definitions + DEFAULT.AGENT.md across 8 categories in a flat layout (`{category}.{name}.agent.md`) |
 | **Knowledge Bases** | Provides 26 KB domains with quick references, concepts, patterns, and specs — loaded lazily to minimize token usage |
+| **Knowledge Context** | Persistent per-project context (stack, architecture, rules, roadmap, glossary, integrations) automatically injected into every Brainstorm session — supports N projects via registry |
 | **SDD Workflow** | Drives the complete feature lifecycle: Brainstorm → Define → Design → Build → Validate → Ship, plus cross-phase Iterate and PR creation |
 | **Delegation** | Lets the Build phase hand scoped work to specialist agents (`@{agent-name}`) with required evidence and per-agent quality gates |
 | **Review** | Supports automated code review and optional cross-model judging for high-risk or critical work |
@@ -27,6 +28,7 @@ Every interaction follows a deterministic grounding chain:
 ```text
 User request
   → grounding.md loaded (mandatory context, security policy, execution tier)
+  → knowledge_context/_registry.yaml loaded → active project context injected
   → skill priority check: if the user invokes /<skill>, load SKILL.md first
   → otherwise: routing.json matches intent to the best agent
   → selected agent activated with its quality gates and stop conditions
@@ -45,14 +47,28 @@ Spec-Driven Development is the core methodology. Every feature progresses throug
 ### Lifecycle
 
 ```text
-Phase 0: Brainstorm  → Explore ideas, ask questions, identify approaches
-Phase 1: Define      → Capture requirements, acceptance criteria, clarity scoring
-Phase 2: Design      → Architecture decisions, file manifest, agent assignments
-Phase 3: Build       → Execute manifest, delegate to specialists, write to ./projects/{feature-name}/
-Phase 3.5: Validate  → Score implementation vs requirements (score >= 90 + 0 CRITICAL → RUNBOOK)
-Phase 4: Ship        → Archive artifacts, capture lessons learned
-Cross-phase: Iterate → Update any SDD document with cascading changes
+Phase 0:   Brainstorm  → Knowledge Checkpoint + explore ideas + identify approaches
+Phase 1:   Define      → Capture requirements, acceptance criteria, clarity scoring (min 12/15)
+Phase 2:   Design      → Architecture decisions, ADRs, file manifest, agent assignments
+Phase 3:   Build       → Execute manifest chunk-by-chunk, delegate to specialists
+Phase 3.5: Validate    → 4-junta scoring (score ≥ 90 + 0 CRITICAL → RUNBOOK)
+Phase 4:   Ship        → Archive artifacts, capture lessons learned
+Cross:     Iterate     → Update any SDD document with cascade awareness
 ```
+
+### Phase Diagrams
+
+Detailed Mermaid flow diagrams with all rules, gates, and mental models:
+
+| Phase | Diagram |
+|---|---|
+| Overview (all phases) | [docs/workflow-graphic/SDD_WORKFLOW_GRAPH.md](docs/workflow-graphic/SDD_WORKFLOW_GRAPH.md) |
+| Phase 0 — Brainstorm | [docs/workflow-graphic/SDD_PHASE0_BRAINSTORM.md](docs/workflow-graphic/SDD_PHASE0_BRAINSTORM.md) |
+| Phase 1 — Define | [docs/workflow-graphic/SDD_PHASE1_DEFINE.md](docs/workflow-graphic/SDD_PHASE1_DEFINE.md) |
+| Phase 2 — Design | [docs/workflow-graphic/SDD_PHASE2_DESIGN.md](docs/workflow-graphic/SDD_PHASE2_DESIGN.md) |
+| Phase 3 — Build | [docs/workflow-graphic/SDD_PHASE3_BUILD.md](docs/workflow-graphic/SDD_PHASE3_BUILD.md) |
+| Phase 3.5 — Validate | [docs/workflow-graphic/SDD_PHASE35_VALIDATE.md](docs/workflow-graphic/SDD_PHASE35_VALIDATE.md) |
+| Phase 4 — Ship | [docs/workflow-graphic/SDD_PHASE4_SHIP.md](docs/workflow-graphic/SDD_PHASE4_SHIP.md) |
 
 ### Commands
 
@@ -71,15 +87,61 @@ Active and draft SDD documents live in `.github/sdd/features/{feature-name}/`. S
 
 ---
 
+## Knowledge Context
+
+The Knowledge Context system gives each project a persistent context layer that is automatically injected into every Brainstorm session — eliminating the need to re-explain the project stack, architecture, and rules on every conversation.
+
+### Knowledge Context Flow
+
+```text
+/knowledge-context-commands /create-context my-project --set-active
+  → scaffolds .github/knowledge_context/my-project/ from templates
+  → registers in _registry.yaml as active_project
+
+Next /brainstorm session:
+  → grounding.md loads _registry.yaml
+  → KNOWLEDGE_CONTEXT.md injected automatically (Step 0 — Knowledge Checkpoint)
+  → stack, entry_points, business_context available without re-typing
+```
+
+### Context Files (per project)
+
+| File | Purpose | Required |
+|---|---|---|
+| `KNOWLEDGE_CONTEXT.md` | Stack, entry points, business context | ✅ Yes |
+| `architecture.md` | Component map, stack decisions, forbidden patterns | Recommended |
+| `rules.md` | Code conventions, branch rules, anti-patterns | Recommended |
+| `roadmap.md` | Current phase, milestones, feature backlog | Optional |
+| `domain-glossary.md` | Business entities, terms, anti-terms | Optional |
+| `integrations.md` | External APIs, queues, data sources, secrets | Optional |
+
+### Knowledge Context Commands
+
+| Command | What it does |
+|---|---|
+| `/knowledge-context-commands /create-context <slug>` | Scaffold full context from templates, register in registry |
+| `/knowledge-context-commands /update-context <slug>` | Update specific file or field; detects cascade impact |
+| `/knowledge-context-commands /check-context [slug]` | Audit completeness, health score 0–100, gap report |
+
+### Multi-Project Support
+
+The `_registry.yaml` file at `.github/knowledge_context/_registry.yaml` tracks all projects and which one is currently active. Switch between projects with:
+
+```text
+/knowledge-context-commands /create-context other-project --set-active
+```
+
+---
+
 ## Quality Gates
 
 AgentSpec enforces a multi-layer quality gate system that prevents incomplete or broken work from advancing:
 
-- **Phase entry/exit gates** — each SDD phase has mandatory criteria. For example, Define requires a clarity score; Design requires a complete file manifest with agent assignments.
+- **Phase entry/exit gates** — each SDD phase has mandatory criteria. Define requires clarity score ≥ 12/15; Design requires a complete file manifest; Build requires DESIGN with manifest.
 - **Specialist quality gates** — when Build delegates a file to a specialist agent (e.g., `@{dbt-specialist}`), that agent's own quality gates must be satisfied and evidence recorded.
 - **Validate is mandatory** — the Build → Ship transition is blocked until Phase 3.5 Validate has been executed and approved.
 - **Score-based validation** — Validate orchestrates four specialized crews (SpecCrew, CodeCrew, DeliveryCrew, CouncilCrew) to produce a weighted score. The pass criteria are: **score ≥ 90** and **0 CRITICAL findings**. A passing validation produces a `RUNBOOK`; a failing one produces a `ROADMAP` of required fixes.
-- **Ship is gated** — Ship will not proceed without an approved validation report. This ensures that every shipped feature has been independently verified against its requirements.
+- **Ship is gated** — Ship will not proceed without an approved validation report and RUNBOOK.
 
 ---
 
@@ -93,8 +155,6 @@ The Build phase supports automatic delegation to specialist agents for scoped wo
 4. All evidence — files written, tests passed, linting results — is recorded in `BUILD_REPORT_{FEATURE}.md`.
 5. If a specialist's quality gates are not met, the build halts and reports the failure.
 
-This keeps domain expertise local to the agent that owns it while maintaining a single audit trail in the build report.
-
 ---
 
 ## Build Output
@@ -106,6 +166,7 @@ Implementation files   → ./projects/{feature-name}/
 SDD feature artifacts  → .github/sdd/features/{feature-name}/
 Archived artifacts     → .github/sdd/archive/{feature-name}/
 Build reports          → .github/sdd/features/{feature-name}/ (or archive after ship)
+Knowledge context      → .github/knowledge_context/{project-slug}/
 ```
 
 Implementation code never lives inside `.github/`. SDD documents never live inside `projects/`. This separation keeps the operating layer clean and the generated code portable.
@@ -123,6 +184,11 @@ Skills are invoked by folder name using slash syntax:
 ### Examples
 
 ```text
+# Knowledge Context setup (run once per project)
+/knowledge-context-commands /create-context my-project --set-active
+/knowledge-context-commands /check-context
+/knowledge-context-commands /update-context my-project --file architecture.md
+
 # SDD workflow
 /workflow-commands /brainstorm "real-time order tracking pipeline"
 /workflow-commands /define .github/sdd/features/order-tracking/BRAINSTORM_ORDER_TRACKING.md
@@ -136,13 +202,10 @@ Skills are invoked by folder name using slash syntax:
 /data-engineering-commands /schema "star schema for order analytics"
 /data-engineering-commands /pipeline "Daily orders ETL with Airflow"
 /data-engineering-commands /data-quality "validate customer dimension"
-/data-engineering-commands /lakehouse "medallion architecture for IoT data"
-/data-engineering-commands /sql-review
 
 # Knowledge management
 /knowledge-commands /create-kb containers
 /knowledge-commands /update-kb airflow
-/knowledge-commands /refresh-stale-kbs
 
 # Review
 /review-commands /review
@@ -152,7 +215,6 @@ Skills are invoked by folder name using slash syntax:
 /visual-explainer /generate-web-diagram "medallion architecture"
 /excalidraw-diagram "CI/CD pipeline flow"
 /core-commands /status
-/core-commands /meeting
 ```
 
 > **Important:** Do not use `#skill:`, `skill:`, `/agentspec:*`, or `.claude/` conventions. Slash-folder invocation is the only supported format.
@@ -165,9 +227,10 @@ Skills are invoked by folder name using slash syntax:
 |---|---|
 | `.github/copilot-instructions.md` | Workspace instructions for GitHub Copilot |
 | `.github/config/` | Grounding protocol, intent router, and security settings |
-| `.github/skills/` | Slash-style command groups (9 skills, 5 with `routing_skill.json`) |
+| `.github/skills/` | Slash-style command groups (10 skills, 6 with `routing_skill.json`) |
 | `.github/agents/` | Specialist agent definitions (62 agents + DEFAULT.AGENT.md, flat layout) |
 | `.github/kb/` | Local domain knowledge bases (26 domains) |
+| `.github/knowledge_context/` | Per-project persistent context — registry + templates + project directories |
 | `.github/sdd/` | SDD templates, active feature specs, architecture contracts, and archives |
 | `projects/` | Implementation output generated by Build (`./projects/{feature-name}/`) |
 | `docs/` | Operator and reference documentation |
@@ -199,6 +262,7 @@ All skills follow the **SKILL.md = Orchestrator, Commands = Executors** architec
 | Skill | Commands | `routing_skill.json` |
 |---|---|---|
 | `/workflow-commands` | `/brainstorm`, `/define`, `/design`, `/build`, `/validate`, `/ship`, `/iterate`, `/create-pr` | ✅ |
+| `/knowledge-context-commands` | `/create-context`, `/update-context`, `/check-context` | ✅ |
 | `/data-engineering-commands` | `/pipeline`, `/schema`, `/data-quality`, `/lakehouse`, `/sql-review`, `/ai-pipeline`, `/data-contract`, `/migrate` | ✅ |
 | `/core-commands` | `/status`, `/meeting`, `/memory`, `/sync-context`, `/readme-maker` | ✅ |
 | `/knowledge-commands` | `/create-kb`, `/update-kb`, `/refresh-stale-kbs` | ✅ |
@@ -212,25 +276,38 @@ All skills follow the **SKILL.md = Orchestrator, Commands = Executors** architec
 
 ## Quick Start
 
-Run a minimal SDD flow from brainstorm to ship:
+### First Time — Configure Project Context
 
 ```text
-# 1. Brainstorm: explore the idea
+# 1. Create context for your project (once per project)
+/knowledge-context-commands /create-context my-project --set-active
+
+# 2. Fill in KNOWLEDGE_CONTEXT.md (stack, entry points, business context)
+# 3. Optionally fill architecture.md, rules.md, roadmap.md
+
+# 4. Verify
+/knowledge-context-commands /check-context
+```
+
+### Run a Feature End-to-End
+
+```text
+# Phase 0: Brainstorm (context auto-injected from knowledge_context/)
 /workflow-commands /brainstorm "my feature idea"
 
-# 2. Define: capture requirements and acceptance criteria
+# Phase 1: Define requirements
 /workflow-commands /define .github/sdd/features/my-feature/BRAINSTORM_MY_FEATURE.md
 
-# 3. Design: architecture, file manifest, agent assignments
+# Phase 2: Design architecture
 /workflow-commands /design .github/sdd/features/my-feature/DEFINE_MY_FEATURE.md
 
-# 4. Build: generate implementation code
+# Phase 3: Build (chunk by chunk)
 /workflow-commands /build .github/sdd/features/my-feature/DESIGN_MY_FEATURE.md
 
-# 5. Validate: score implementation against requirements
+# Phase 3.5: Validate (score ≥ 90 required)
 /workflow-commands /validate my-feature
 
-# 6. Ship: archive artifacts and capture lessons learned
+# Phase 4: Ship
 /workflow-commands /ship .github/sdd/features/my-feature/DEFINE_MY_FEATURE.md
 ```
 
@@ -248,6 +325,7 @@ Each command produces an artifact that feeds the next phase. If validation fails
 | [Tutorials](docs/tutorials/) | Practical AgentSpec workflows |
 | [Reference](docs/reference/) | Full skills, agents, KB, routing, and validation catalog |
 | [Skills Architecture](docs/skills-architecture.md) | Skill directory standard, routing_skill.json schema, command patterns, quality gates |
+| [SDD Phase Diagrams](docs/workflow-graphic/SDD_WORKFLOW_GRAPH.md) | Mermaid flowcharts for all SDD phases |
 
 ---
 
@@ -264,6 +342,9 @@ Each command produces an artifact that feeds the next phase. If validation fails
 | KB domains | `.github/kb/` |
 | Skills | `.github/skills/` |
 | Config | `.github/config/` |
+| Knowledge Context registry | `.github/knowledge_context/_registry.yaml` |
+| Knowledge Context templates | `.github/knowledge_context/_templates/` |
+| Knowledge Context (per project) | `.github/knowledge_context/{project-slug}/` |
 
 ---
 
@@ -275,6 +356,8 @@ find .github/kb -name "quick-reference.md" | wc -l
 find .github/skills -maxdepth 2 -name SKILL.md | sort
 python3 -m json.tool .github/config/routing.json
 find projects -maxdepth 2 -type f | sort
+# Knowledge context
+cat .github/knowledge_context/_registry.yaml
 ```
 
 ---

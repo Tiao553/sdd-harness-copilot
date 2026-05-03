@@ -1,35 +1,35 @@
 # Knowledge Commands Skill
 
-O skill `/knowledge-commands` administra KBs locais. Ele existe para criar, atualizar e revisar dominios de conhecimento sem misturar esse trabalho com implementacao de feature. Uma KB no AgentSpec nao e uma wiki solta: ela e uma dependencia operacional dos agentes, usada para reduzir memoria implicita, padronizar decisoes e tornar respostas tecnicas mais reprodutiveis.
+The `/knowledge-commands` skill manages local KBs. It exists to create, update, and review knowledge domains without mixing that work with feature implementation. A KB in AgentSpec is not a loose wiki: it is an operational dependency for agents, used to reduce implicit memory, standardize decisions, and make technical responses more reproducible.
 
-O ponto central desse skill e separar conhecimento reutilizavel de artefato de feature. Um DEFINE ou DESIGN documenta uma necessidade especifica; uma KB documenta padroes que devem sobreviver a varias features. Quando um padrao de dbt, Airflow, Spark, containers ou contratos de dados passa a ser recorrente, ele deve migrar para KB para que o router e os agentes possam reutiliza-lo.
+The central point of this skill is to separate reusable knowledge from feature artifacts. A DEFINE or DESIGN documents a specific need; a KB documents patterns that should survive across multiple features. When a dbt, Airflow, Spark, container, or data contract pattern becomes recurring, it should migrate to KB so that the router and agents can reuse it.
 
-## Comandos
+## Commands
 
-| Comando | Papel |
+| Command | Role |
 |---|---|
-| `/knowledge-commands /create-kb` | Cria novo dominio de KB com estrutura minima |
-| `/knowledge-commands /update-kb` | Atualiza dominio existente com novos padroes |
-| `/knowledge-commands /refresh-stale-kbs` | Revisa KBs antigas ou desalinhadas |
+| `/knowledge-commands /create-kb` | Creates a new KB domain with minimal structure |
+| `/knowledge-commands /update-kb` | Updates an existing domain with new patterns |
+| `/knowledge-commands /refresh-stale-kbs` | Reviews outdated or misaligned KBs |
 
-## Estrutura esperada
+## Expected structure
 
 ```mermaid
 flowchart TD
-    A[".github/kb/{dominio}/"] --> B["quick-reference.md"]
+    A[".github/kb/{domain}/"] --> B["quick-reference.md"]
     A --> C["index.md"]
     A --> D["concepts/"]
     A --> E["patterns/"]
     A --> F["specs/"]
-    B --> G["Carregado primeiro"]
-    C --> H["Mapa do dominio"]
-    D --> I["Fundamentos"]
-    E --> J["Receitas reutilizaveis"]
-    F --> K["Contratos e detalhes formais"]
+    B --> G["Loaded first"]
+    C --> H["Domain map"]
+    D --> I["Fundamentals"]
+    E --> J["Reusable recipes"]
+    F --> K["Contracts and formal details"]
 ```
 
-## Por que isso importa
+## Why this matters
 
-Sem KB, cada agente dependeria de prompts longos ou conhecimento de memoria. Com KB, o reposititorio passa a ter uma fonte local de padroes. Isso tambem ajuda a revisar qualidade: se uma implementacao diverge do padrao de `quick-reference.md`, o build report deve registrar a decisao ou corrigir o arquivo.
+Without KB, each agent would depend on long prompts or memory-held knowledge. With KB, the repository gains a local source of patterns. This also helps with quality review: if an implementation diverges from the `quick-reference.md` pattern, the build report should record the decision or correct the file.
 
-KBs devem ser pequenas na entrada e profundas sob demanda. O `quick-reference.md` e a porta de entrada; arquivos completos so devem ser carregados quando a referencia rapida for insuficiente. Esse desenho controla tokens e evita que respostas simples carreguem conhecimento demais.
+KBs should be small at the entry point and deep on demand. The `quick-reference.md` is the entry door; full files should only be loaded when the quick reference is insufficient. This design controls token usage and prevents simple responses from carrying too much knowledge.

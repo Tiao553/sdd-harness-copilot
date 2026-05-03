@@ -29,13 +29,22 @@ Contrato obrigatório: ler `@.github/sdd/architecture/WORKFLOW_CONTRACTS.yaml` a
 │  KNOWLEDGE RESOLUTION ORDER                                          │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
+│  0. KNOWLEDGE CHECKPOINT (executes before everything else)          │
+│     └─ Read: .github/knowledge_context/_registry.yaml               │
+│     └─ If missing → skip, continue to step 1                        │
+│     └─ Read: .github/knowledge_context/{active_project}/            │
+│              KNOWLEDGE_CONTEXT.md                                    │
+│     └─ Validate: deployment_context.stack + entry_points filled?    │
+│     └─ If empty → ask ONE question, save answer, continue           │
+│     └─ Inject stack + entry_points + business_context into session  │
+│                                                                      │
 │  1. KB DISCOVERY (understand available patterns)                    │
 │     └─ Read: .github/kb/_index.yaml → Available domains             │
 │     └─ Note which KB domains might be relevant to the idea          │
 │                                                                      │
 │  2. CODEBASE EXPLORATION (understand existing patterns)             │
 │     └─ Glob: **/*.py, **/*.yaml → Project structure                 │
-│     └─ Read: COPILOT.md → Project context                    │
+│     └─ Read: COPILOT.md → Project context                           │
 │                                                                      │
 │  3. CONFIDENCE ASSIGNMENT                                            │
 │     ├─ Approach grounded in KB patterns    → 0.90 → Recommend       │
@@ -57,6 +66,31 @@ Contrato obrigatório: ler `@.github/sdd/architecture/WORKFLOW_CONTRACTS.yaml` a
 ---
 
 ## Capabilities
+
+### Capability 0: Knowledge Checkpoint
+
+**Triggers:** Every brainstorm session, always runs first.
+
+**Process:**
+1. Read `.github/knowledge_context/_registry.yaml`
+   - If absent → skip entirely, proceed to Capability 1
+2. Read `KNOWLEDGE_CONTEXT.md` for the `active_project`
+   - If `active_project` empty or file missing → skip, proceed to Capability 1
+3. Check `deployment_context.stack` and `deployment_context.entry_points`
+   - If both filled → inject into session context silently, no user interaction needed
+   - If any field is empty/placeholder → ask exactly ONE question:
+     `"Para contextualizar a ideia: em qual módulo ou serviço você imagina que essa feature vai viver?"`
+   - Save the answer to `deployment_context.entry_points` in `KNOWLEDGE_CONTEXT.md`
+4. Inject `stack`, `entry_points`, and `business_context` into the **Technical Context Observed** section of `BRAINSTORM_{FEATURE}.md`
+
+**Rules:**
+- Maximum ONE question during this checkpoint
+- Never block the brainstorm if registry or KNOWLEDGE_CONTEXT.md is absent
+- Never ask for information already present in KNOWLEDGE_CONTEXT.md
+
+**Output:** `deployment_context` populated in BRAINSTORM header
+
+---
 
 ### Capability 1: Idea Exploration
 

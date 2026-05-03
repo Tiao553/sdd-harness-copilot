@@ -1,4 +1,4 @@
-# Fase 4 — SHIP
+# Phase 4 — SHIP
 
 ```mermaid
 flowchart TD
@@ -6,38 +6,38 @@ flowchart TD
 
     START --> PREREQ
 
-    subgraph PREREQ["🔒 GATE — 6 pré-requisitos obrigatórios"]
+    subgraph PREREQ["🔒 GATE — 6 mandatory prerequisites"]
         direction LR
         PR1["DEFINE_{FEATURE}.md"]
         PR2["DESIGN_{FEATURE}.md"]
-        PR3["BUILD_REPORT_{FEATURE}.md\n(100% completo)"]
+        PR3["BUILD_REPORT_{FEATURE}.md\n(100% complete)"]
         PR4["VALIDATION_REPORT_{FEATURE}.md\nscore ≥ 90, CRITICAL = 0"]
-        PR5["RUNBOOK_{FEATURE}.md\n(existe)"]
-        PR6["Todos os testes passando"]
+        PR5["RUNBOOK_{FEATURE}.md\n(exists)"]
+        PR6["All tests passing"]
     end
 
-    PREREQ --> GATE{"Todos os 6 critérios
-    atendidos?"}
+    PREREQ --> GATE{"All 6 criteria
+    met?"}
 
-    GATE -->|"❌ Qualquer falha"| BLOCK["⛔ BLOQUEADO
-    Informar exatamente
-    o que está faltando"]
+    GATE -->|"❌ Any failure"| BLOCK["⛔ BLOCKED
+    Report exactly
+    what is missing"]
 
-    GATE -->|"✅ Todos OK"| S1
+    GATE -->|"✅ All OK"| S1
 
-    S1["📋 Passo 1 — Verify Completion
-    Ler todos os artefatos da feature
-    Confirmar que BUILD_REPORT mostra
-    100% dos tasks completos"]
+    S1["📋 Step 1 — Verify Completion
+    Read all feature artifacts
+    Confirm BUILD_REPORT shows
+    100% of tasks complete"]
 
     S1 --> S2
 
-    S2["📁 Passo 2 — Create Archive
+    S2["📁 Step 2 — Create Archive
     mkdir -p .github/sdd/archive/{feature-name}/"]
 
     S2 --> S3
 
-    subgraph S3["📂 Passo 3 — Copy Artifacts to Archive"]
+    subgraph S3["📂 Step 3 — Copy Artifacts to Archive"]
         direction TB
         CP1["DEFINE_{FEATURE}.md"]
         CP2["DESIGN_{FEATURE}.md"]
@@ -48,31 +48,31 @@ flowchart TD
 
     S3 --> S4
 
-    subgraph S4["📝 Passo 4 — Document Lessons Learned"]
+    subgraph S4["📝 Step 4 — Document Lessons Learned"]
         direction TB
-        LL1["Process: o que funcionou no fluxo"]
-        LL2["Technical: decisões técnicas que valeram"]
-        LL3["Communication: clarificações que evitaram retrabalho"]
-        LL4["Tools: bibliotecas/ferramentas que simplificaram"]
-        LL_OUT["Salvar em SHIPPED_{DATE}.md"]
+        LL1["Process: what worked in the flow"]
+        LL2["Technical: technical decisions that paid off"]
+        LL3["Communication: clarifications that avoided rework"]
+        LL4["Tools: libraries/tools that simplified things"]
+        LL_OUT["Save in SHIPPED_{DATE}.md"]
         LL1 & LL2 & LL3 & LL4 --> LL_OUT
     end
 
     S4 --> S5
 
-    S5["🔄 Passo 5 — Update Document Statuses
+    S5["🔄 Step 5 — Update Document Statuses
     DEFINE → Status: ✅ Shipped
     DESIGN → Status: ✅ Shipped
-    Adicionar revisão: 'Shipped and archived'"]
+    Add revision: 'Shipped and archived'"]
 
     S5 --> S6
 
-    S6["🧹 Passo 6 — Clean Up
+    S6["🧹 Step 6 — Clean Up
     rm -rf .github/sdd/features/{feature-name}/"]
 
     S6 --> S7
 
-    S7["💾 Passo 7 — Save SHIPPED Document
+    S7["💾 Step 7 — Save SHIPPED Document
     Write: .github/sdd/archive/{feature-name}/SHIPPED_{DATE}.md"]
 
     S7 --> OUT
@@ -83,19 +83,19 @@ flowchart TD
 
     OUT --> METRICS
 
-    subgraph METRICS["📊 SHIPPED_{DATE}.md contém"]
+    subgraph METRICS["📊 SHIPPED_{DATE}.md contains"]
         direction LR
         M1["Feature name + date"]
-        M2["Validation score final"]
+        M2["Final validation score"]
         M3["Lines of code, files created"]
-        M4["Lessons learned (4 categorias)"]
-        M5["Links para todos os artefatos arquivados"]
+        M4["Lessons learned (4 categories)"]
+        M5["Links to all archived artifacts"]
     end
 
-    METRICS --> NEXT["🆕 Nova feature?
-    /workflow-commands /define 'próxima ideia'"]
+    METRICS --> NEXT["🆕 New feature?
+    /workflow-commands /define 'next idea'"]
 
-    subgraph ARCHIVE_STRUCTURE["📁 Estrutura do Archive"]
+    subgraph ARCHIVE_STRUCTURE["📁 Archive Structure"]
         direction TB
         A1[".github/sdd/archive/{feature-name}/"]
         A2["├── SHIPPED_{DATE}.md"]
@@ -108,14 +108,14 @@ flowchart TD
     end
 
     subgraph GATE_QUALITY["✅ Quality Gate"]
-        GC1{"BUILD_REPORT mostra 100%?"}
+        GC1{"BUILD_REPORT shows 100%?"}
         GC2{"VALIDATION_REPORT score ≥ 90?"}
         GC3{"CRITICAL issues = 0?"}
-        GC4{"RUNBOOK existe?"}
-        GC5{"Testes passando?"}
-        GC6{"Artefatos copiados para archive?"}
-        GC7{"SHIPPED_{DATE}.md criado?"}
-        GC8{"Features dir removido?"}
+        GC4{"RUNBOOK exists?"}
+        GC5{"Tests passing?"}
+        GC6{"Artifacts copied to archive?"}
+        GC7{"SHIPPED_{DATE}.md created?"}
+        GC8{"Features dir removed?"}
     end
 
     classDef step fill:#1b5e20,stroke:#43a047,color:#fff
@@ -133,36 +133,36 @@ flowchart TD
     class NEXT next
 ```
 
-## Regras Rápidas
+## Quick Rules
 
-| # | Regra |
-|---|---|
-| 1 | **6 pré-requisitos** — qualquer um faltando → bloqueado |
-| 2 | `VALIDATION_REPORT` com **score ≥ 90 E CRITICAL = 0** é obrigatório |
-| 3 | `RUNBOOK_{FEATURE}.md` deve existir (gerado pelo /validate) |
-| 4 | **Lessons learned** documentadas em 4 categorias |
-| 5 | Artefatos são **copiados** para archive, não movidos direto |
-| 6 | DEFINE e DESIGN recebem **Status: ✅ Shipped** antes de arquivar |
-| 7 | `.github/sdd/features/{feature-name}/` é **removido** após arquivar |
-| 8 | Código permanece em `./projects/{feature-name}/` — não é removido |
+| # | Rule |
+| --- | --- |
+| 1 | **6 prerequisites** — any missing → blocked |
+| 2 | `VALIDATION_REPORT` with **score ≥ 90 AND CRITICAL = 0** is mandatory |
+| 3 | `RUNBOOK_{FEATURE}.md` must exist (generated by /validate) |
+| 4 | **Lessons learned** documented in 4 categories |
+| 5 | Artifacts are **copied** to archive, not moved directly |
+| 6 | DEFINE and DESIGN receive **Status: ✅ Shipped** before archiving |
+| 7 | `.github/sdd/features/{feature-name}/` is **removed** after archiving |
+| 8 | Code remains in `./projects/{feature-name}/` — it is not removed |
 
-## Lessons Learned — Guia
+## Lessons Learned — Guide
 
-| Categoria | Exemplos de entrada |
-|---|---|
-| **Process** | "Quebrar em chunks menores ajudou" · "Mais checkpoints no brainstorm" |
-| **Technical** | "Config via YAML > env vars" · "Specialist X foi crucial para Y" |
-| **Communication** | "Clarificar escopo antes do design evitou retrabalho" |
-| **Tools** | "Biblioteca X simplificou Z" · "Usar pattern do KB economizou tempo" |
+| Category | Example entries |
+| --- | --- |
+| **Process** | "Breaking into smaller chunks helped" · "More checkpoints in brainstorm" |
+| **Technical** | "Config via YAML > env vars" · "Specialist X was crucial for Y" |
+| **Communication** | "Clarifying scope before design avoided rework" |
+| **Tools** | "Library X simplified Z" · "Using KB pattern saved time" |
 
 ## Archive vs Features
 
 ```text
-Durante desenvolvimento:
-  .github/sdd/features/{feature-name}/   ← artefatos ativos
+During development:
+  .github/sdd/features/{feature-name}/   ← active artifacts
 
-Após /ship:
-  .github/sdd/archive/{feature-name}/    ← artefatos permanentes
-  .github/sdd/features/{feature-name}/   ← REMOVIDO
-  ./projects/{feature-name}/             ← código permanece
+After /ship:
+  .github/sdd/archive/{feature-name}/    ← permanent artifacts
+  .github/sdd/features/{feature-name}/   ← REMOVED
+  ./projects/{feature-name}/             ← code remains
 ```

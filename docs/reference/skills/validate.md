@@ -1,10 +1,10 @@
 # Validate Skill
 
-O skill `/validate` e a fase 3.5 do SDD AgentSpec. Ele fica obrigatoriamente entre Build e Ship. A funcao dele e transformar evidencias de implementacao em uma decisao de qualidade: a feature esta pronta para producao, precisa de remediation roadmap ou deve permanecer bloqueada.
+The `/validate` skill is phase 3.5 of the SDD AgentSpec. It sits mandatorily between Build and Ship. Its function is to transform implementation evidence into a quality decision: the feature is ready for production, needs a remediation roadmap, or must remain blocked.
 
-Ele existe porque `/build` e `/ship` respondem perguntas diferentes. Build pergunta "os arquivos do DESIGN foram implementados e verificados localmente?". Validate pergunta "a implementacao resultante ainda satisfaz o DEFINE, respeita o DESIGN, tem qualidade tecnica aceitavel, cobre seguranca/devops e possui prontidao operacional?". Ship so deve arquivar depois que essa segunda pergunta tiver resposta documentada.
+It exists because `/build` and `/ship` answer different questions. Build asks "were the DESIGN files implemented and locally verified?". Validate asks "does the resulting implementation still satisfy the DEFINE, respect the DESIGN, have acceptable technical quality, cover security/devops, and possess operational readiness?". Ship should only archive after that second question has a documented answer.
 
-## Posicao no fluxo
+## Position in the flow
 
 ```mermaid
 flowchart LR
@@ -14,30 +14,30 @@ flowchart LR
     D --> E{"Score >= 90<br/>0 critical?"}
     E -->|yes| F["Runbook"]
     F --> G["Ship"]
-    E -->|no| H["Roadmap ou report"]
+    E -->|no| H["Roadmap or report"]
     H --> C
 ```
 
-## Entradas
+## Inputs
 
-| Artefato | Caminho |
+| Artifact | Path |
 |---|---|
-| Requisitos | `.github/sdd/features/{feature-name}/DEFINE_{FEATURE}.md` |
+| Requirements | `.github/sdd/features/{feature-name}/DEFINE_{FEATURE}.md` |
 | Design | `.github/sdd/features/{feature-name}/DESIGN_{FEATURE}.md` |
 | Build report | `.github/sdd/features/{feature-name}/BUILD_REPORT_{FEATURE}.md` |
-| Codigo | `projects/{feature-name}/` |
+| Code | `projects/{feature-name}/` |
 
-## Saidas
+## Outputs
 
-| Saida | Quando e gerada |
+| Output | When generated |
 |---|---|
-| `VALIDATION_REPORT_{FEATURE}.md` | Sempre |
-| `RUNBOOK_{FEATURE}.md` | Score >= 90 e zero CRITICAL |
-| `ROADMAP_{FEATURE}.md` | Score 70-89 e zero CRITICAL |
+| `VALIDATION_REPORT_{FEATURE}.md` | Always |
+| `RUNBOOK_{FEATURE}.md` | Score >= 90 and zero CRITICAL |
+| `ROADMAP_{FEATURE}.md` | Score 70-89 and zero CRITICAL |
 
-## Dimensoes
+## Dimensions
 
-| Dimensao | Peso |
+| Dimension | Weight |
 |---|---:|
 | Spec Alignment | 30% |
 | Code Quality | 25% |
@@ -45,6 +45,6 @@ flowchart LR
 | Security & DevOps | 15% |
 | Production Readiness | 10% |
 
-## Regra de Ship
+## Ship Rule
 
-Ship deve exigir `VALIDATION_REPORT_{FEATURE}.md` e deve bloquear se houver CRITICAL issue ou score abaixo de 90. Quando o resultado e remediation, o caminho correto e corrigir a implementacao, atualizar `BUILD_REPORT` quando necessario e rodar `/workflow-commands /validate` novamente.
+Ship must require `VALIDATION_REPORT_{FEATURE}.md` and must block if there is a CRITICAL issue or a score below 90. When the result is remediation, the correct path is to fix the implementation, update `BUILD_REPORT` when necessary, and run `/workflow-commands /validate` again.

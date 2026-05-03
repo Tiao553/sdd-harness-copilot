@@ -1,33 +1,33 @@
 # Review Commands Skill
 
-O skill `/review-commands` concentra revisao tecnica. Ele existe para separar a postura de autor da postura de revisor. Quando um usuario pede revisao, o comportamento esperado muda: a resposta deve priorizar bugs, riscos, regressao comportamental, seguranca, dados incorretos e lacunas de teste antes de qualquer resumo.
+The `/review-commands` skill concentrates technical review. It exists to separate the author posture from the reviewer posture. When a user requests a review, the expected behavior changes: the response must prioritize bugs, risks, behavioral regression, security, incorrect data, and test gaps before any summary.
 
-O skill tambem documenta o conceito de judge, que e uma segunda opiniao para saidas de maior risco. Neste workspace, o runtime local de judge em `scripts/archive` foi removido; portanto qualquer fluxo de judge deve ser tratado como capacidade externa ou futura, nao como script local disponivel.
+The skill also documents the judge concept, which is a second opinion for higher-risk outputs. In this workspace, the local judge runtime in `scripts/archive` has been removed; therefore any judge flow should be treated as an external or future capability, not a locally available script.
 
-## Comandos
+## Commands
 
-| Comando | Papel |
+| Command | Role |
 |---|---|
-| `/review-commands /review` | Revisao direta de arquivo, diff ou artefato |
-| `/review-commands /judge` | Segunda opiniao quando houver runtime externo configurado |
+| `/review-commands /review` | Direct review of a file, diff, or artifact |
+| `/review-commands /judge` | Second opinion when an external runtime is configured |
 
-## Fluxo de revisao
+## Review flow
 
 ```mermaid
 flowchart TD
-    A["Artefato para revisar"] --> B["/review-commands"]
-    B --> C{"Tipo"}
-    C --> D["/review<br/>achados primeiro"]
-    C --> E["/judge<br/>segunda opiniao externa"]
-    D --> F["Severidade + evidencia"]
-    E --> G["PASS/FAIL quando disponivel"]
-    F --> H["Perguntas abertas"]
+    A["Artifact to review"] --> B["/review-commands"]
+    B --> C{"Type"}
+    C --> D["/review<br/>findings first"]
+    C --> E["/judge<br/>external second opinion"]
+    D --> F["Severity + evidence"]
+    E --> G["PASS/FAIL when available"]
+    F --> H["Open questions"]
     G --> H
-    H --> I["Resumo secundario"]
+    H --> I["Secondary summary"]
 ```
 
-## Criterios
+## Criteria
 
-Uma boa revisao cita arquivo e linha, descreve o comportamento que quebra, explica impacto e sugere correcao concreta. Ela nao deve gastar a primeira parte elogiando o codigo ou recontando o que o diff faz. O resumo vem depois dos achados, porque a prioridade e permitir acao imediata.
+A good review cites file and line, describes the behavior that breaks, explains the impact, and suggests a concrete fix. It should not spend the first part praising the code or retelling what the diff does. The summary comes after the findings, because the priority is to enable immediate action.
 
-Use o judge apenas para material de risco: DDL, IAM, RLS, SQL complexo, Terraform, contratos de dados ou workflow que possa afetar producao. Para documentacao simples, renomeacoes ou formatacao, a revisao normal e suficiente.
+Use the judge only for high-risk material: DDL, IAM, RLS, complex SQL, Terraform, data contracts, or workflows that could affect production. For simple documentation, renames, or formatting, a normal review is sufficient.

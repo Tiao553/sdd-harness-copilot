@@ -1,10 +1,10 @@
 # Knowledge Base
 
-As KBs em `.github/kb/` sao a memoria tecnica versionada do AgentSpec. Elas armazenam referencias rapidas, conceitos, padroes e especificacoes que os agentes consultam antes de tomar decisoes tecnicas. A ideia nao e transformar a KB em uma enciclopedia enorme, mas em uma biblioteca local de padroes que realmente guiam implementacao e revisao.
+The KBs in `.github/kb/` are the versioned technical memory of AgentSpec. They store quick references, concepts, patterns, and specifications that agents consult before making technical decisions. The goal is not to turn the KB into a massive encyclopedia, but into a local library of patterns that genuinely guide implementation and review.
 
-Ter KB separada de agentes e importante porque conhecimento de dominio muda em ritmo diferente do papel operacional. O `dbt-specialist` pode continuar sendo o agente de dbt, enquanto a KB de dbt evolui com novos padroes de incremental, testes, macros e organizacao de projeto. Isso evita duplicar o mesmo conhecimento em varios agentes.
+Keeping KB separate from agents matters because domain knowledge changes at a different pace than the operational role. The `dbt-specialist` can remain the dbt agent while the dbt KB evolves with new incremental patterns, tests, macros, and project organization. This avoids duplicating the same knowledge across multiple agents.
 
-## Estrutura
+## Structure
 
 ```mermaid
 flowchart TD
@@ -14,58 +14,58 @@ flowchart TD
     B --> E["concepts/"]
     B --> F["patterns/"]
     B --> G["specs/"]
-    C --> H["Primeiro arquivo carregado"]
-    D --> I["Mapa do dominio"]
-    E --> J["Explicacoes fundamentais"]
-    F --> K["Receitas reutilizaveis"]
-    G --> L["Contratos formais"]
+    C --> H["First file loaded"]
+    D --> I["Domain map"]
+    E --> J["Foundational explanations"]
+    F --> K["Reusable recipes"]
+    G --> L["Formal contracts"]
 ```
 
-## Dominios atuais
+## Current domains
 
-| Dominio | Uso comum |
+| Domain | Common use |
 |---|---|
-| `ai-data-engineering` | RAG, embeddings, feature stores e LLMOps |
-| `airflow` | DAGs, operadores, assets e orquestracao |
-| `aws` | Arquitetura e servicos AWS para dados |
-| `cloud-platforms` | Padroes multi-cloud |
-| `containers` | Docker, Compose, imagens, Kubernetes e Helm |
-| `data-modeling` | Dimensional, Data Vault, SCD e evolucao |
-| `data-quality` | Testes, SLAs, observabilidade e contratos |
-| `dbt` | Modelos, macros, testes e projeto dbt |
-| `gcp` | BigQuery, Cloud Run, Pub/Sub, GCS e Vertex AI |
-| `genai` | RAG, agentes, embeddings e tool calling |
-| `lakeflow` | Databricks Lakeflow e DLT |
-| `lakehouse` | Delta, Iceberg, catalogos e governanca |
-| `medallion` | Bronze, Silver, Gold e qualidade progressiva |
-| `microsoft-fabric` | Fabric Lakehouse, Data Factory, KQL e Power BI |
-| `modern-stack` | Stack moderna de dados e integracoes |
-| `prompt-engineering` | Prompts, extracao estruturada e avaliacao |
-| `pydantic` | Modelagem, validacao e schemas Python |
-| `python` | Padroes Python para engenharia de dados |
-| `spark` | Spark, PySpark, performance e troubleshooting |
-| `sql-patterns` | SQL portavel, CTEs, janelas e otimizacao |
-| `streaming` | Kafka, Flink, CDC e processamento continuo |
-| `supabase` | Postgres, RLS, pgvector, Auth e Realtime |
-| `terraform` | IaC, modulos, ambientes e validacao |
-| `testing` | Pytest, fixtures, integracao e estrategia |
+| `ai-data-engineering` | RAG, embeddings, feature stores, and LLMOps |
+| `airflow` | DAGs, operators, assets, and orchestration |
+| `aws` | AWS architecture and data services |
+| `cloud-platforms` | Multi-cloud patterns |
+| `containers` | Docker, Compose, images, Kubernetes, and Helm |
+| `data-modeling` | Dimensional, Data Vault, SCD, and evolution |
+| `data-quality` | Tests, SLAs, observability, and contracts |
+| `dbt` | Models, macros, tests, and dbt project |
+| `gcp` | BigQuery, Cloud Run, Pub/Sub, GCS, and Vertex AI |
+| `genai` | RAG, agents, embeddings, and tool calling |
+| `lakeflow` | Databricks Lakeflow and DLT |
+| `lakehouse` | Delta, Iceberg, catalogs, and governance |
+| `medallion` | Bronze, Silver, Gold, and progressive quality |
+| `microsoft-fabric` | Fabric Lakehouse, Data Factory, KQL, and Power BI |
+| `modern-stack` | Modern data stack and integrations |
+| `prompt-engineering` | Prompts, structured extraction, and evaluation |
+| `pydantic` | Modeling, validation, and Python schemas |
+| `python` | Python patterns for data engineering |
+| `spark` | Spark, PySpark, performance, and troubleshooting |
+| `sql-patterns` | Portable SQL, CTEs, windows, and optimization |
+| `streaming` | Kafka, Flink, CDC, and continuous processing |
+| `supabase` | Postgres, RLS, pgvector, Auth, and Realtime |
+| `terraform` | IaC, modules, environments, and validation |
+| `testing` | Pytest, fixtures, integration, and strategy |
 
-## Politica de carregamento
+## Loading policy
 
 ```mermaid
 flowchart TD
-    A["Agente precisa de conhecimento"] --> B["Carregar quick-reference.md"]
-    B --> C{"Suficiente?"}
-    C -->|sim| D["Executar"]
-    C -->|nao| E["Carregar index.md ou pattern especifico"]
-    E --> F{"Ainda insuficiente?"}
-    F -->|sim| G["Maximo 3 arquivos KB por request"]
-    F -->|nao| D
-    G --> H["Pedir clarificacao ou registrar limite"]
+    A["Agent needs knowledge"] --> B["Load quick-reference.md"]
+    B --> C{"Sufficient?"}
+    C -->|yes| D["Execute"]
+    C -->|no| E["Load index.md or specific pattern"]
+    E --> F{"Still insufficient?"}
+    F -->|yes| G["Maximum 3 KB files per request"]
+    F -->|no| D
+    G --> H["Ask for clarification or record limit"]
 ```
 
-O quick-reference deve ser pequeno, acionavel e atualizado. Ele deve conter heuristicas, comandos, gates e armadilhas comuns. Arquivos profundos devem ser usados apenas quando uma decisao ou implementacao realmente precisa de detalhe.
+The quick-reference should be small, actionable, and up to date. It should contain heuristics, commands, gates, and common pitfalls. Deep files should only be used when a decision or implementation genuinely requires that level of detail.
 
-## Ciclo de vida
+## Lifecycle
 
-KBs nascem quando um padrao se torna recorrente, mudam quando um dominio evolui e devem ser revisadas quando ficarem antigas. O skill `/knowledge-commands` fornece o caminho operacional para criar, atualizar e refrescar esses dominios.
+KBs are created when a pattern becomes recurring, updated when a domain evolves, and should be reviewed when they become stale. The `/knowledge-commands` skill provides the operational path to create, update, and refresh these domains.

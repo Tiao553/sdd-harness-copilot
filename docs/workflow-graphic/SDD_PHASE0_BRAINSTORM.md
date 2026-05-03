@@ -1,96 +1,96 @@
-# Fase 0 — BRAINSTORM
+# Phase 0 — BRAINSTORM
 
 ```mermaid
 flowchart TD
-    START(["💡 Ideia / Requisito bruto"])
+    START(["💡 Idea / Raw Requirement"])
     START --> G
 
-    subgraph G["🔍 Grounding Obrigatório"]
-        G1["Ler CLAUDE.md"] --> G2["Ler WORKFLOW_CONTRACTS.yaml"]
-        G2 --> G3["Carregar KB domains relevantes (≤ 3)"]
+    subgraph G["🔍 Mandatory Grounding"]
+        G1["Read CLAUDE.md"] --> G2["Read WORKFLOW_CONTRACTS.yaml"]
+        G2 --> G3["Load relevant KB domains (≤ 3)"]
     end
 
     G --> KB
 
     subgraph KB["KB-First Resolution"]
-        KB1["KB Discovery\nDomínio relevante existe?"]
-        KB2["Codebase Exploration\nPadrões já implementados?"]
+        KB1["KB Discovery\nDoes a relevant domain exist?"]
+        KB2["Codebase Exploration\nPatterns already implemented?"]
         KB3["Confidence Assignment\n0.0 → 1.0"]
-        KB4["MCP Validation\nse confidence < 0.85"]
+        KB4["MCP Validation\nif confidence < 0.85"]
         KB1 --> KB2 --> KB3 --> KB4
     end
 
     KB --> S1
 
-    S1["📌 Passo 1 — Gather Context
-    BRAINSTORM anterior existe?
-    Carregar contexto do projeto"]
+    S1["📌 Step 1 — Gather Context
+    Does a previous BRAINSTORM exist?
+    Load project context"]
 
     S1 --> S2
 
-    S2["❓ Passo 2 — Discovery Questions
-    Mínimo 3 perguntas obrigatórias
-    Preferir múltipla escolha
-    Uma pergunta por vez (sem question dump)"]
+    S2["❓ Step 2 — Discovery Questions
+    Minimum 3 mandatory questions
+    Prefer multiple choice
+    One question at a time (no question dump)"]
 
     S2 --> S3
 
-    S3["🗂️ Passo 3 — Sample Collection
-    Coletar inputs, outputs e ground truth
-    Necessário para grounding do LLM"]
+    S3["🗂️ Step 3 — Sample Collection
+    Collect inputs, outputs, and ground truth
+    Required for LLM grounding"]
 
     S3 --> S4
 
-    S4["⚖️ Passo 4 — Explore Approaches
-    Apresentar 2 a 3 abordagens
-    Cada uma com trade-offs claros
-    Nunca apresentar abordagem única"]
+    S4["⚖️ Step 4 — Explore Approaches
+    Present 2 to 3 approaches
+    Each with clear trade-offs
+    Never present a single approach"]
 
     S4 --> S5
 
-    S5["✂️ Passo 5 — Apply YAGNI
-    'Precisa disso para o MVP?'
-    Eliminar complexidade desnecessária"]
+    S5["✂️ Step 5 — Apply YAGNI
+    'Do we need this for MVP?'
+    Eliminate unnecessary complexity"]
 
     S5 --> S6
 
-    S6["🔁 Passo 6 — Validate Incrementally
-    Mínimo 2 checkpoints com o usuário
-    Apresentar progresso antes de finalizar"]
+    S6["🔁 Step 6 — Validate Incrementally
+    Minimum 2 checkpoints with the user
+    Present progress before finalizing"]
 
     S6 --> S7
 
-    S7["💾 Passo 7 — Gerar Documento
-    Salvar BRAINSTORM_{FEATURE}.md"]
+    S7["💾 Step 7 — Generate Document
+    Save BRAINSTORM_{FEATURE}.md"]
 
     S7 --> GATE
 
     subgraph GATE["✅ Quality Gate"]
-        GC1{"Problema claro e específico?"}
-        GC2{"Usuários identificados?"}
-        GC3{"≥ 2 abordagens com trade-offs?"}
-        GC4{"YAGNI aplicado?"}
-        GC5{"Samples coletados?"}
-        GC6{"≥ 2 checkpoints validados?"}
+        GC1{"Problem clear and specific?"}
+        GC2{"Users identified?"}
+        GC3{"≥ 2 approaches with trade-offs?"}
+        GC4{"YAGNI applied?"}
+        GC5{"Samples collected?"}
+        GC6{"≥ 2 checkpoints validated?"}
     end
 
-    GATE --> PASS{"Todos os itens ✅?"}
-    PASS -->|"❌ Não"| S2
-    PASS -->|"✅ Sim"| OUT
+    GATE --> PASS{"All items ✅?"}
+    PASS -->|"❌ No"| S2
+    PASS -->|"✅ Yes"| OUT
 
     OUT[/"📄 BRAINSTORM_{FEATURE}.md
     Status: Ready for Define
     Path: .github/sdd/features/{feature-name}/"/]
 
-    OUT --> NEXT{"Próximo passo"}
-    NEXT -->|"Fluxo normal"| DEFINE["➡️ /define"]
-    NEXT -->|"Mudança futura"| ITERATE["🔄 /iterate"]
+    OUT --> NEXT{"Next step"}
+    NEXT -->|"Normal flow"| DEFINE["➡️ /define"]
+    NEXT -->|"Future change"| ITERATE["🔄 /iterate"]
 
     subgraph ANTI["🚫 Anti-Patterns"]
-        A1["Question dump\n(várias perguntas de uma vez)"]
-        A2["Assumir respostas\nsem perguntar"]
-        A3["Apresentar\napenas 1 abordagem"]
-        A4["Ignorar\nconstraints técnicos"]
+        A1["Question dump\n(multiple questions at once)"]
+        A2["Assuming answers\nwithout asking"]
+        A3["Presenting\nonly 1 approach"]
+        A4["Ignoring\ntechnical constraints"]
     end
 
     classDef step fill:#1a1a2e,stroke:#e94560,color:#fff
@@ -106,14 +106,14 @@ flowchart TD
     class DEFINE,ITERATE next
 ```
 
-## Regras Rápidas
+## Quick Rules
 
-| # | Regra |
-|---|---|
-| 1 | Mínimo **3 perguntas** de discovery |
-| 2 | Sempre **múltipla escolha** nas perguntas |
-| 3 | Apresentar **2–3 abordagens** com trade-offs |
-| 4 | Aplicar **YAGNI** — cortar o que não é MVP |
-| 5 | **≥ 2 checkpoints** de validação com o usuário |
+| # | Rule |
+| --- | --- |
+| 1 | Minimum **3 discovery questions** |
+| 2 | Always **multiple choice** in questions |
+| 3 | Present **2–3 approaches** with trade-offs |
+| 4 | Apply **YAGNI** — cut what is not MVP |
+| 5 | **≥ 2 validation checkpoints** with the user |
 | 6 | Confidence threshold: **0.85** |
-| 7 | Nunca fazer question dump — **uma pergunta por vez** |
+| 7 | Never do a question dump — **one question at a time** |

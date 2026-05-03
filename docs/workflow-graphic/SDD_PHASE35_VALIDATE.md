@@ -1,41 +1,41 @@
-# Fase 3.5 — VALIDATE
+# Phase 3.5 — VALIDATE
 
 ```mermaid
 flowchart TD
     START(["🔍 /validate {FEATURE}"])
 
-    START --> PREREQ{"🔒 GATE: todos os
-    pré-requisitos existem?"}
+    START --> PREREQ{"🔒 GATE: all
+    prerequisites exist?"}
 
-    subgraph PREREQS["Pré-requisitos obrigatórios"]
+    subgraph PREREQS["Mandatory prerequisites"]
         direction LR
         PR1["DEFINE_{FEATURE}.md"]
         PR2["DESIGN_{FEATURE}.md"]
         PR3["BUILD_REPORT_{FEATURE}.md"]
-        PR4["projects/{feature-name}/ com código"]
+        PR4["projects/{feature-name}/ with code"]
     end
 
-    PREREQ -->|"❌ Qualquer um faltando"| BLOCK["⛔ BLOQUEADO
-    Informar exatamente
-    o que está faltando"]
+    PREREQ -->|"❌ Any missing"| BLOCK["⛔ BLOCKED
+    Report exactly
+    what is missing"]
 
-    PREREQ -->|"✅ Todos presentes"| S1
+    PREREQ -->|"✅ All present"| S1
 
-    S1["📋 Passo 1 — Load Contracts
-    Ler WORKFLOW_CONTRACTS.yaml
-    Ler VALIDATE_JUNTAS_CONTRACT.yaml
-    Ativar validate-agent"]
+    S1["📋 Step 1 — Load Contracts
+    Read WORKFLOW_CONTRACTS.yaml
+    Read VALIDATE_JUNTAS_CONTRACT.yaml
+    Activate validate-agent"]
 
     S1 --> S2
 
-    S2["📦 Passo 2 — Build Evidence Pack (frozen)
-    Ler DEFINE + DESIGN + BUILD_REPORT
+    S2["📦 Step 2 — Build Evidence Pack (frozen)
+    Read DEFINE + DESIGN + BUILD_REPORT
     Scan projects/{feature-name}/ → code_tree
-    Criar .github/sdd/features/{feature-name}/_validate/"]
+    Create .github/sdd/features/{feature-name}/_validate/"]
 
     S2 --> S3
 
-    subgraph S3["⚡ Passo 3 — Juntas Paralelas (background)"]
+    subgraph S3["⚡ Step 3 — Parallel Juntas (background)"]
         direction LR
 
         subgraph SPEC["🔎 Spec Junta"]
@@ -57,9 +57,9 @@ flowchart TD
 
     S3 --> S4
 
-    subgraph S4["📬 Passo 4 — Delivery Junta (sequential)"]
+    subgraph S4["📬 Step 4 — Delivery Junta (sequential)"]
         direction TB
-        DJ1["Aguardar Spec + Code Junta completarem"]
+        DJ1["Wait for Spec + Code Junta to complete"]
         DJ2["Personas: CMP, GAP"]
         DJ3["Input: evidence pack + SpecReport + CodeReport"]
         DJ4["Output: 03_DELIVERY_DELTA_{FEATURE}.json"]
@@ -68,7 +68,7 @@ flowchart TD
 
     S4 --> S5
 
-    subgraph S5["🔢 Passo 5 — Deterministic Scoring (sem LLM)"]
+    subgraph S5["🔢 Step 5 — Deterministic Scoring (no LLM)"]
         direction TB
         SC1["score = alignment × 0.30
                + quality × 0.25
@@ -76,50 +76,50 @@ flowchart TD
                + devops × 0.15
                + delta × 0.10"]
         SC2["critical_count = count findings severity == CRITICAL"]
-        SC3["Salvar: 05_SCORING_{FEATURE}.json"]
+        SC3["Save: 05_SCORING_{FEATURE}.json"]
         SC1 --> SC2 --> SC3
     end
 
     S5 --> S6
 
-    subgraph S6["🏛️ Passo 6 — Council Junta (narrative only)"]
+    subgraph S6["🏛️ Step 6 — Council Junta (narrative only)"]
         direction TB
         COU1["Personas: JDG, RPT, PRD"]
-        COU2["Input: todos os reports + scoring"]
-        COU3["⚠️ NÃO pode alterar scores ou elegibilidade"]
+        COU2["Input: all reports + scoring"]
+        COU3["⚠️ CANNOT alter scores or eligibility"]
         COU4["Output: 04_COUNCIL_VERDICT_{FEATURE}.json"]
         COU1 --> COU2 --> COU3 --> COU4
     end
 
     S6 --> DECISION
 
-    subgraph DECISION["📊 Passo 7 — Render Artifacts"]
+    subgraph DECISION["📊 Step 7 — Render Artifacts"]
         direction TB
-        D_CHECK{"Score e CRITICAL?"}
+        D_CHECK{"Score and CRITICAL?"}
         D_CHECK -->|"score ≥ 90\nCRITICAL = 0\n🟢 APPROVED"| APPROVED["VALIDATION_REPORT\n+ RUNBOOK_{FEATURE}.md"]
         D_CHECK -->|"score 70–89\nCRITICAL = 0\n🟡 CONDITIONAL"| CONDITIONAL["VALIDATION_REPORT\n+ ROADMAP_{FEATURE}.md"]
-        D_CHECK -->|"score < 70\nou CRITICAL > 0\n🔴 FAILED"| FAILED["VALIDATION_REPORT only\nBlocka /ship"]
+        D_CHECK -->|"score < 70\nor CRITICAL > 0\n🔴 FAILED"| FAILED["VALIDATION_REPORT only\nBlocks /ship"]
     end
 
     APPROVED --> SHIP["➡️ /ship"]
-    CONDITIONAL --> ITERATE["🔄 /iterate → /build → /validate novamente"]
-    FAILED --> FIX["🔴 Corrigir issues críticas
-    /iterate DESIGN ou DEFINE
-    Re-executar /build + /validate"]
+    CONDITIONAL --> ITERATE["🔄 /iterate → /build → /validate again"]
+    FAILED --> FIX["🔴 Fix critical issues
+    /iterate DESIGN or DEFINE
+    Re-run /build + /validate"]
 
-    subgraph JUNTAS_MAP["🗺️ Mapa das Juntas"]
+    subgraph JUNTAS_MAP["🗺️ Juntas Map"]
         direction TB
-        J1["Junta 1 — SpecCrew (paralela)
-        Valida: spec vs implementação
+        J1["Junta 1 — SpecCrew (parallel)
+        Validates: spec vs implementation
         MGR, ARC, ENG, SWE"]
-        J2["Junta 2 — CodeCrew (paralela)
-        Valida: qualidade de código
+        J2["Junta 2 — CodeCrew (parallel)
+        Validates: code quality
         MGR, SWE, ENG, OPS"]
-        J3["Junta 3 — DeliveryCrew (sequencial)
-        Valida: gaps de entrega
+        J3["Junta 3 — DeliveryCrew (sequential)
+        Validates: delivery gaps
         CMP, GAP"]
-        J4["Junta 4 — CouncilCrew (narrativa)
-        Resumo executivo — não altera scores
+        J4["Junta 4 — CouncilCrew (narrative)
+        Executive summary — does not alter scores
         JDG, RPT, PRD"]
         J1 & J2 --> J3 --> J4
     end
@@ -143,34 +143,34 @@ flowchart TD
     class BLOCK block
 ```
 
-## Regras Rápidas
+## Quick Rules
 
-| # | Regra |
-|---|---|
-| 1 | **4 pré-requisitos obrigatórios** — qualquer um faltando → bloqueado |
-| 2 | **Juntas 1 e 2 rodam em paralelo** (background) — Junta 3 espera ambas |
-| 3 | **Scoring é 100% determinístico** — aritmética pura, sem LLM |
-| 4 | **Council NÃO altera scores** — é narrativa apenas |
-| 5 | **score ≥ 90 + CRITICAL = 0** → única combinação que aprova para /ship |
-| 6 | **score 70–89** → ROADMAP gerado, precisa iterar e re-validar |
-| 7 | **score < 70 ou qualquer CRITICAL** → bloqueia /ship completamente |
+| # | Rule |
+| --- | --- |
+| 1 | **4 mandatory prerequisites** — any missing → blocked |
+| 2 | **Juntas 1 and 2 run in parallel** (background) — Junta 3 waits for both |
+| 3 | **Scoring is 100% deterministic** — pure arithmetic, no LLM |
+| 4 | **Council does NOT alter scores** — narrative only |
+| 5 | **score ≥ 90 + CRITICAL = 0** → the only combination that approves for /ship |
+| 6 | **score 70–89** → ROADMAP generated, must iterate and re-validate |
+| 7 | **score < 70 or any CRITICAL** → blocks /ship completely |
 
 ## Scoring Formula
 
-```
-score = alignment    × 0.30   (spec vs implementação)
-      + quality      × 0.25   (qualidade de código)
-      + architecture × 0.20   (aderência ao design)
+```text
+score = alignment    × 0.30   (spec vs implementation)
+      + quality      × 0.25   (code quality)
+      + architecture × 0.20   (design adherence)
       + devops       × 0.15   (CI/CD, infra, ops)
-      + delta        × 0.10   (gaps de entrega)
+      + delta        × 0.10   (delivery gaps)
 
 pass condition: score ≥ 90  AND  critical_count = 0
 ```
 
-## Outputs por Score
+## Outputs by Score
 
-| Score | CRITICAL | Resultado | Próximo passo |
-|---|---|---|---|
+| Score | CRITICAL | Result | Next step |
+| --- | --- | --- | --- |
 | ≥ 90 | 0 | ✅ Approved | `/ship` |
 | 70–89 | 0 | 🟡 Conditional | `/iterate` → `/build` → `/validate` |
-| < 70 | qualquer | 🔴 Failed | Corrigir issues críticas, re-validar |
+| < 70 | any | 🔴 Failed | Fix critical issues, re-validate |

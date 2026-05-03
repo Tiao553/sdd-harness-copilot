@@ -1,129 +1,129 @@
-# Fase 3 — BUILD
+# Phase 3 — BUILD
 
 ```mermaid
 flowchart TD
     START(["📄 DESIGN_{FEATURE}.md"])
 
-    START --> GATE{"🔒 GATE OBRIGATÓRIO
-    DESIGN_{FEATURE}.md existe?
-    File manifest presente?"}
+    START --> GATE{"🔒 MANDATORY GATE
+    DESIGN_{FEATURE}.md exists?
+    File manifest present?"}
 
-    GATE -->|"❌ NÃO"| BLOCK["⛔ BLOQUEADO
-    Execute /design primeiro"]
+    GATE -->|"❌ NO"| BLOCK["⛔ BLOCKED
+    Run /design first"]
 
-    GATE -->|"✅ SIM"| S1
+    GATE -->|"✅ YES"| S1
 
-    S1["📂 Passo 1 — Load Context
-    Ler DESIGN_{FEATURE}.md
-    Ler DEFINE_{FEATURE}.md
-    Ler copilot-instructions.md"]
+    S1["📂 Step 1 — Load Context
+    Read DESIGN_{FEATURE}.md
+    Read DEFINE_{FEATURE}.md
+    Read copilot-instructions.md"]
 
     S1 --> S2
 
-    subgraph S2["📋 Passo 2 — Planning & Task (OBRIGATÓRIO antes de qualquer código)"]
+    subgraph S2["📋 Step 2 — Planning & Task (MANDATORY before any code)"]
         direction TB
-        P1["Criar implementation_plan.md
-        • Todas as decisões técnicas
-        • Agent assignments por arquivo
-        • Links para specialist .agent.md"]
-        P2["Criar task.md
-        • Sub-tasks granulares por chunk
-        • Agente responsável por sub-task
-        • Status inicial: ⏳ Pending"]
+        P1["Create implementation_plan.md
+        • All technical decisions
+        • Agent assignments per file
+        • Links to specialist .agent.md"]
+        P2["Create task.md
+        • Granular sub-tasks per chunk
+        • Responsible agent per sub-task
+        • Initial status: ⏳ Pending"]
         P1 --> P2
     end
 
     S2 --> S3
 
-    S3["🔍 Passo 3 — Isolate Next Chunk
-    Identificar próximo chunk ⏳ Pending
-    no BUILD_REPORT_{FEATURE}.md
-    Executar APENAS este chunk"]
+    S3["🔍 Step 3 — Isolate Next Chunk
+    Identify next ⏳ Pending chunk
+    in BUILD_REPORT_{FEATURE}.md
+    Execute ONLY this chunk"]
 
     S3 --> S4
 
-    subgraph S4["⚙️ Passo 4 — Execute Chunk"]
+    subgraph S4["⚙️ Step 4 — Execute Chunk"]
         direction TB
         E0["mkdir -p ./projects/{feature-name}/"]
-        E1["Para cada arquivo do chunk:"]
+        E1["For each file in the chunk:"]
         E2["1. JIT Persona Delegation
-        Ler implementation_plan.md
-        Identificar agente do arquivo"]
-        E3["2. Reference Check (OBRIGATÓRIO)
-        Ler specialist .agent.md
-        Ler routing.json"]
+        Read implementation_plan.md
+        Identify the file's agent"]
+        E3["2. Reference Check (MANDATORY)
+        Read specialist .agent.md
+        Read routing.json"]
         E4["3. Banner Protocol
         Print: Invoking Specialist: [Agent]"]
         E5["4. Write
-        Criar arquivo em ./projects/{feature-name}/
-        Aplicar code patterns do DESIGN"]
+        Create file in ./projects/{feature-name}/
+        Apply code patterns from DESIGN"]
         E6["5. Verify
         ruff check . / mypy . / pytest"]
         E7["6. Mark Complete
-        Atualizar task.md"]
+        Update task.md"]
         E0 --> E1 --> E2 --> E3 --> E4 --> E5 --> E6
-        E6 --> RETRY{"Verificação passou?"}
+        E6 --> RETRY{"Verification passed?"}
         RETRY -->|"❌ Fail (retry ≤ 3)"| E5
         RETRY -->|"✅ Pass"| E7
-        RETRY -->|"❌ Fail após 3 tentativas"| BLOCKER["🛑 Registrar bloqueio
-        Parar e reportar"]
+        RETRY -->|"❌ Fail after 3 attempts"| BLOCKER["🛑 Register blocker
+        Stop and report"]
     end
 
     S4 --> S5
 
-    S5["💾 Passo 5 — Persist State (OBRIGATÓRIO após cada arquivo)
-    Atualizar BUILD_REPORT_{FEATURE}.md
-    Este é o System of Record (SoR)
-    Permite retomar o trabalho via Git"]
+    S5["💾 Step 5 — Persist State (MANDATORY after each file)
+    Update BUILD_REPORT_{FEATURE}.md
+    This is the System of Record (SoR)
+    Allows resuming work via Git"]
 
     S5 --> S6
 
-    S6["📊 Passo 6 — Report
-    Atualizar Chunk Execution Log
-    ✅ Passed ou ❌ Failed
-    PARAR e perguntar ao usuário
-    se deve avançar para próximo chunk"]
+    S6["📊 Step 6 — Report
+    Update Chunk Execution Log
+    ✅ Passed or ❌ Failed
+    STOP and ask user
+    whether to advance to next chunk"]
 
-    S6 --> MORE{"Mais chunks pending?"}
-    MORE -->|"✅ Sim"| S3
-    MORE -->|"✅ Todos completos"| OUT
+    S6 --> MORE{"More chunks pending?"}
+    MORE -->|"✅ Yes"| S3
+    MORE -->|"✅ All complete"| OUT
 
-    OUT[/"📁 Artefatos gerados
-    Código: ./projects/{feature-name}/
+    OUT[/"📁 Generated artifacts
+    Code: ./projects/{feature-name}/
     BUILD_REPORT_{FEATURE}.md
     Status: Ready for Validate"/]
 
     OUT --> NEXT["➡️ /validate"]
 
-    subgraph DELEGATE["🤖 JIT Delegation — Especialistas disponíveis"]
+    subgraph DELEGATE["🤖 JIT Delegation — Available Specialists"]
         direction LR
         D1["@container-specialist
         Docker, Compose, infra"]
         D2["@dbt-specialist
-        Modelos, testes, docs"]
+        Models, tests, docs"]
         D3["@airflow-specialist
         DAGs, operators, scheduling"]
         D4["@python-developer
-        Scripts, testes, CLI"]
+        Scripts, tests, CLI"]
     end
 
     subgraph GATE_QUALITY["✅ Quality Gate"]
-        GC1{"Todos os arquivos do manifest criados?"}
-        GC2{"Todos em ./projects/{feature-name}/?"}
-        GC3{"Lint passa (ruff)?"}
-        GC4{"Type check passa (mypy)?"}
-        GC5{"Testes passam (pytest)?"}
-        GC6{"Sem TODO no código?"}
-        GC7{"BUILD_REPORT gerado e atualizado?"}
-        GC8{"Quality gates dos specialists met?"}
+        GC1{"All files from manifest created?"}
+        GC2{"All in ./projects/{feature-name}/?"}
+        GC3{"Lint passes (ruff)?"}
+        GC4{"Type check passes (mypy)?"}
+        GC5{"Tests pass (pytest)?"}
+        GC6{"No TODO in code?"}
+        GC7{"BUILD_REPORT generated and updated?"}
+        GC8{"Specialist quality gates met?"}
     end
 
     subgraph ISSUE_HANDLING["⚠️ Handling Issues"]
         direction LR
-        I1["Requisito ausente → /iterate DEFINE"]
-        I2["Problema arquitetural → /iterate DESIGN"]
-        I3["Bug simples → Fix e continuar"]
-        I4["Bloqueio maior → Parar e reportar"]
+        I1["Missing requirement → /iterate DEFINE"]
+        I2["Architectural problem → /iterate DESIGN"]
+        I3["Simple bug → Fix and continue"]
+        I4["Major blocker → Stop and report"]
     end
 
     classDef step fill:#0d1b2a,stroke:#1e88e5,color:#fff
@@ -141,18 +141,18 @@ flowchart TD
     class NEXT next
 ```
 
-## Regras Rápidas
+## Quick Rules
 
-| # | Regra |
-|---|---|
-| 1 | **GATE DURO**: sem `DESIGN_{FEATURE}.md` com manifest → bloqueado |
-| 2 | `implementation_plan.md` e `task.md` **obrigatórios antes de qualquer código** |
-| 3 | Executar **apenas o próximo chunk pending** — nunca o projeto inteiro de uma vez |
-| 4 | Todo arquivo vai para `./projects/{feature-name}/` — nunca na raiz |
-| 5 | `BUILD_REPORT` é o **System of Record** — atualizar após cada arquivo |
-| 6 | Verificação falha → retry até **3 vezes** antes de registrar bloqueio |
-| 7 | Cada arquivo tem um **specialist agent** definido no implementation_plan |
-| 8 | PARAR após cada chunk e perguntar ao usuário antes de continuar |
+| # | Rule |
+| --- | --- |
+| 1 | **HARD GATE**: without `DESIGN_{FEATURE}.md` with manifest → blocked |
+| 2 | `implementation_plan.md` and `task.md` **mandatory before any code** |
+| 3 | Execute **only the next pending chunk** — never the entire project at once |
+| 4 | Every file goes to `./projects/{feature-name}/` — never in the root |
+| 5 | `BUILD_REPORT` is the **System of Record** — update after each file |
+| 6 | Verification fails → retry up to **3 times** before registering a blocker |
+| 7 | Each file has a **specialist agent** defined in the implementation_plan |
+| 8 | STOP after each chunk and ask the user before continuing |
 
 ## Execution Loop
 
@@ -160,10 +160,10 @@ flowchart TD
 BUILD_REPORT (SoR)
       │
       ▼
-Próximo chunk ⏳ Pending
+Next chunk ⏳ Pending
       │
       ▼
-Para cada arquivo do chunk:
+For each file in the chunk:
   → JIT delegate → write → verify → persist
       │                         │
       │ ✅                      │ ❌ (retry ≤ 3)
@@ -171,5 +171,5 @@ Para cada arquivo do chunk:
   task.md updated          fix + retry
       │
       ▼
-BUILD_REPORT updated → STOP → aguardar usuário
+BUILD_REPORT updated → STOP → wait for user
 ```

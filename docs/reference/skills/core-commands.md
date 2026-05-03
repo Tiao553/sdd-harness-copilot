@@ -1,40 +1,40 @@
 # Core Commands Skill
 
-O skill `/core-commands` agrupa comandos operacionais de suporte ao uso diario do AgentSpec. Ele nao inicia fases SDD e nao substitui o router; sua funcao e cuidar de atividades transversais como leitura de status, memoria de sessao, analise de reunioes, sincronizacao de contexto e geracao de README. Por isso ele e tratado como uma camada de utilidade: ajuda o operador a manter contexto, transformar informacao dispersa em artefatos legiveis e consultar o estado do workspace sem entrar no fluxo formal de Brainstorm, Define, Design, Build ou Ship.
+The `/core-commands` skill groups operational support commands for daily use of AgentSpec. It does not start SDD phases and does not replace the router; its function is to handle cross-cutting activities such as reading status, session memory, meeting analysis, context synchronization, and README generation. For this reason it is treated as a utility layer: it helps the operator maintain context, transform scattered information into readable artifacts, and query workspace state without entering the formal Brainstorm, Define, Design, Build, or Ship flow.
 
-O motivo de existir um skill separado para comandos core e reduzir ambiguidade. Sem esse agrupamento, pedidos como "salve isso", "analise essa reuniao" ou "qual o status" poderiam cair em agentes de planejamento, revisao ou desenvolvimento. Ao exigir `/core-commands`, o runtime deixa claro que a intencao e administrativa e que o resultado esperado e documentacao, memoria ou relatorio de estado, nao implementacao.
+The reason a separate skill exists for core commands is to reduce ambiguity. Without this grouping, requests like "save this", "analyze this meeting", or "what's the status" could fall into planning, review, or development agents. By requiring `/core-commands`, the runtime makes it clear that the intent is administrative and that the expected result is documentation, memory, or a status report — not an implementation.
 
-## Comandos
+## Commands
 
-| Comando | Papel | Saida esperada |
+| Command | Role | Expected output |
 |---|---|---|
-| `/core-commands /meeting` | Extrai decisoes, acoes, perguntas abertas e insights de atas ou transcricoes | Analise estruturada em Markdown |
-| `/core-commands /memory` | Salva aprendizados relevantes da sessao em `.github/storage/` | Arquivo de memoria por data |
-| `/core-commands /readme-maker` | Gera ou melhora README com foco em clareza operacional | README ou trecho de README |
-| `/core-commands /status` | Resume o estado do AgentSpec e seus artefatos | Status de workspace |
-| `/core-commands /sync-context` | Atualiza contexto persistente quando aplicavel | Contexto sincronizado |
+| `/core-commands /meeting` | Extracts decisions, actions, open questions, and insights from minutes or transcripts | Structured Markdown analysis |
+| `/core-commands /memory` | Saves relevant session learnings to `.github/storage/` | Memory file per date |
+| `/core-commands /readme-maker` | Generates or improves README with a focus on operational clarity | README or README snippet |
+| `/core-commands /status` | Summarizes the state of AgentSpec and its artifacts | Workspace status |
+| `/core-commands /sync-context` | Updates persistent context when applicable | Synchronized context |
 
-## Fluxo
+## Flow
 
 ```mermaid
 flowchart TD
-    A["Usuario invoca<br/>/core-commands"] --> B["grounding.md"]
+    A["User invokes<br/>/core-commands"] --> B["grounding.md"]
     B --> C["SKILL.md<br/>core-commands"]
-    C --> D{"Subcomando"}
+    C --> D{"Subcommand"}
     D --> E["/meeting<br/>meeting-analyst"]
-    D --> F["/memory<br/>storage local"]
-    D --> G["/readme-maker<br/>documentacao"]
-    D --> H["/status<br/>inventario"]
-    D --> I["/sync-context<br/>contexto"]
-    E --> J["Markdown estruturado"]
+    D --> F["/memory<br/>local storage"]
+    D --> G["/readme-maker<br/>documentation"]
+    D --> H["/status<br/>inventory"]
+    D --> I["/sync-context<br/>context"]
+    E --> J["Structured Markdown"]
     F --> J
     G --> J
     H --> J
     I --> J
 ```
 
-## Como usar bem
+## How to use effectively
 
-Use este skill quando a tarefa for sobre organizacao de informacao, manutencao de contexto ou leitura de estado. Ele nao deve ser usado para iniciar uma fase SDD, porque esse contrato pertence ao `/workflow-commands`. Tambem nao deve ser usado para criar KBs, porque esse dominio pertence ao `/knowledge-commands`.
+Use this skill when the task involves organizing information, maintaining context, or reading state. It should not be used to start an SDD phase, because that contract belongs to `/workflow-commands`. It should also not be used to create KBs, because that domain belongs to `/knowledge-commands`.
 
-O padrao recomendado e invocar o skill com o subcomando explicito e um alvo claro. Por exemplo, uma ata de reuniao deve ser passada como caminho de arquivo; uma memoria deve conter o resumo de alto valor; um status deve ser pedido sem misturar uma implementacao no mesmo comando. Isso mantem o comando pequeno, auditavel e previsivel.
+The recommended pattern is to invoke the skill with an explicit subcommand and a clear target. For example, meeting minutes should be passed as a file path; a memory should contain the high-value summary; a status should be requested without mixing an implementation in the same command. This keeps the command small, auditable, and predictable.

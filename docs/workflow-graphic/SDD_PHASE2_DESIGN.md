@@ -1,110 +1,110 @@
-# Fase 2 — DESIGN
+# Phase 2 — DESIGN
 
 ```mermaid
 flowchart TD
     START(["📄 DEFINE_{FEATURE}.md"])
 
-    START --> MANDATORY_GATE{"🔒 GATE OBRIGATÓRIO
-    DEFINE_{FEATURE}.md existe?"}
+    START --> MANDATORY_GATE{"🔒 MANDATORY GATE
+    DEFINE_{FEATURE}.md exists?"}
 
-    MANDATORY_GATE -->|"❌ NÃO"| BLOCK["⛔ BLOQUEADO
-    Execute /define primeiro"]
+    MANDATORY_GATE -->|"❌ NO"| BLOCK["⛔ BLOCKED
+    Run /define first"]
 
-    MANDATORY_GATE -->|"✅ SIM"| G
+    MANDATORY_GATE -->|"✅ YES"| G
 
-    subgraph G["🔍 Grounding Obrigatório"]
-        G1["Ler CLAUDE.md"] --> G2["Ler WORKFLOW_CONTRACTS.yaml"]
-        G2 --> G3["Carregar routing.json"]
+    subgraph G["🔍 Mandatory Grounding"]
+        G1["Read CLAUDE.md"] --> G2["Read WORKFLOW_CONTRACTS.yaml"]
+        G2 --> G3["Load routing.json"]
     end
 
     G --> KB
 
     subgraph KB["KB-First Resolution — threshold: 0.95"]
-        KB1["1. KB Pattern Loading\n(padrões relevantes ao domínio)"]
-        KB2["2. Agent Discovery\n(routing.json — agente por tipo)"]
+        KB1["1. KB Pattern Loading\n(patterns relevant to the domain)"]
+        KB2["2. Agent Discovery\n(routing.json — agent per type)"]
         KB3["3. Confidence Assignment"]
-        KB4["4. MCP Validation\nse confidence < 0.95"]
+        KB4["4. MCP Validation\nif confidence < 0.95"]
         KB1 --> KB2 --> KB3 --> KB4
     end
 
     KB --> S1
 
-    S1["📂 Passo 1 — Load Context
-    Ler DEFINE_{FEATURE}.md completo
-    Carregar KB domains do problema
-    Mapear dependências existentes"]
+    S1["📂 Step 1 — Load Context
+    Read DEFINE_{FEATURE}.md in full
+    Load KB domains for the problem
+    Map existing dependencies"]
 
     S1 --> S2
 
-    S2["🏛️ Passo 2 — Create Architecture
-    Diagrama ASCII obrigatório
-    Decisões de componentes justificadas
-    Stack tecnológica com razões
-    Estratégia de integração"]
+    S2["🏛️ Step 2 — Create Architecture
+    Mandatory ASCII diagram
+    Justified component decisions
+    Technology stack with rationale
+    Integration strategy"]
 
     S2 --> ADR
 
-    subgraph ADR["📝 Passo 3 — Inline ADR (uma por decisão crítica)"]
+    subgraph ADR["📝 Step 3 — Inline ADR (one per critical decision)"]
         direction TB
         ADR1["Status:               Proposed | Accepted | Deprecated | Superseded"]
         ADR2["Date:                 YYYY-MM-DD"]
-        ADR3["Context:              situação que força a decisão"]
-        ADR4["Choice:               decisão tomada"]
-        ADR5["Rationale:            por quê essa escolha"]
-        ADR6["Alternatives Rejected: o que foi descartado e por quê"]
-        ADR7["Consequences:         impactos e trade-offs"]
+        ADR3["Context:              situation forcing the decision"]
+        ADR4["Choice:               decision made"]
+        ADR5["Rationale:            why this choice"]
+        ADR6["Alternatives Rejected: what was discarded and why"]
+        ADR7["Consequences:         impacts and trade-offs"]
     end
 
     ADR --> S4
 
-    S4["📁 Passo 4 — File Manifest
-    Tabela completa de todos os arquivos"]
+    S4["📁 Step 4 — File Manifest
+    Complete table of all files"]
 
-    subgraph MANIFEST["Estrutura do File Manifest"]
+    subgraph MANIFEST["File Manifest Structure"]
         direction LR
-        M1["# — número sequencial"]
-        M2["file_path — caminho relativo"]
+        M1["# — sequential number"]
+        M2["file_path — relative path"]
         M3["action — CREATE | MODIFY | DELETE | READ"]
-        M4["purpose — o que faz"]
-        M5["dependencies — depende de quê"]
+        M4["purpose — what it does"]
+        M5["dependencies — depends on what"]
     end
 
     S4 --> MANIFEST
     MANIFEST --> S5
 
-    subgraph S5["🤖 Passo 5 — Agent Matching (via routing.json)"]
+    subgraph S5["🤖 Step 5 — Agent Matching (via routing.json)"]
         direction TB
-        AM1["File Type        → peso HIGH"]
-        AM2["Purpose Keywords → peso HIGH"]
-        AM3["Path Patterns    → peso MEDIUM"]
-        AM4["KB Domain        → peso MEDIUM"]
-        AM_OUT["Assign: arquivo → agente especialista"]
+        AM1["File Type        → weight HIGH"]
+        AM2["Purpose Keywords → weight HIGH"]
+        AM3["Path Patterns    → weight MEDIUM"]
+        AM4["KB Domain        → weight MEDIUM"]
+        AM_OUT["Assign: file → specialist agent"]
         AM1 & AM2 & AM3 & AM4 --> AM_OUT
     end
 
     S5 --> S6
 
-    S6["⌨️ Passo 6 — Code Patterns
-    Snippets copy-paste ready
-    Baseados em KB patterns validados
-    Um padrão por tipo de componente"]
+    S6["⌨️ Step 6 — Code Patterns
+    Copy-paste ready snippets
+    Based on validated KB patterns
+    One pattern per component type"]
 
     S6 --> S7
 
-    S7["🧪 Passo 7 — Testing Strategy"]
+    S7["🧪 Step 7 — Testing Strategy"]
 
-    subgraph TESTS["Estratégia de Testes"]
+    subgraph TESTS["Testing Strategy"]
         direction LR
-        T1["Unit\nlógica isolada"]
-        T2["Integration\ncontratos entre componentes"]
-        T3["E2E\nfluxo ponta a ponta"]
+        T1["Unit\nisolated logic"]
+        T2["Integration\ncontracts between components"]
+        T3["E2E\nend-to-end flow"]
     end
 
     S7 --> TESTS
     TESTS --> DE_CHECK
 
-    DE_CHECK{"É um caso\nde Data Engineering?"}
-    DE_CHECK -->|"✅ Sim"| PIPELINE
+    DE_CHECK{"Is this a\nData Engineering case?"}
+    DE_CHECK -->|"✅ Yes"| PIPELINE
 
     subgraph PIPELINE["🔄 Pipeline Architecture"]
         direction LR
@@ -114,59 +114,59 @@ flowchart TD
         PA4["Schema Evolution"]
     end
 
-    DE_CHECK -->|"❌ Não"| PRINCIPLES
+    DE_CHECK -->|"❌ No"| PRINCIPLES
     PIPELINE --> PRINCIPLES
 
-    subgraph PRINCIPLES["📐 Princípios de Design — todos obrigatórios"]
+    subgraph PRINCIPLES["📐 Design Principles — all mandatory"]
         direction LR
-        P1["Self-Contained\nsem deps externas desnecessárias"]
-        P2["Config Over Code\ncomportamento via config"]
-        P3["KB Patterns\nreutilizar padrões validados"]
-        P4["Agent Specialization\ndelegar ao agente certo"]
-        P5["Testable\ndesign facilita testes"]
+        P1["Self-Contained\nno unnecessary external deps"]
+        P2["Config Over Code\nbehavior via config"]
+        P3["KB Patterns\nreuse validated patterns"]
+        P4["Agent Specialization\ndelegate to the right agent"]
+        P5["Testable\ndesign facilitates testing"]
     end
 
     PRINCIPLES --> GATE
 
     subgraph GATE["✅ Quality Gate"]
-        GC1{"Diagrama de arquitetura (ASCII) presente?"}
-        GC2{"ADR para cada decisão crítica?"}
-        GC3{"File manifest completo (todos os arquivos)?"}
-        GC4{"Agent matching definido?"}
+        GC1{"Architecture diagram (ASCII) present?"}
+        GC2{"ADR for each critical decision?"}
+        GC3{"Complete file manifest (all files)?"}
+        GC4{"Agent matching defined?"}
         GC5{"Code patterns copy-paste ready?"}
-        GC6{"Testing strategy definida (Unit/Int/E2E)?"}
-        GC7{"Pipeline arch (se DE) documentada?"}
-        GC8{"Princípios de design respeitados?"}
+        GC6{"Testing strategy defined (Unit/Int/E2E)?"}
+        GC7{"Pipeline arch (if DE) documented?"}
+        GC8{"Design principles respected?"}
     end
 
-    GATE --> PASS{"Todos os itens ✅?"}
-    PASS -->|"❌ Não — revisão"| S2
-    PASS -->|"✅ Sim"| OUT
+    GATE --> PASS{"All items ✅?"}
+    PASS -->|"❌ No — revision"| S2
+    PASS -->|"✅ Yes"| OUT
 
     OUT[/"📄 DESIGN_{FEATURE}.md
     Status: Ready for Build
-    Contém: Arquitetura · ADRs · Manifest · Patterns · Tests
+    Contains: Architecture · ADRs · Manifest · Patterns · Tests
     Path: .github/sdd/features/{feature-name}/"/]
 
-    OUT --> NEXT{"Próximo passo"}
-    NEXT -->|"Fluxo normal"| BUILD["➡️ /build"]
-    NEXT -->|"Mudança futura"| ITERATE["🔄 /iterate"]
+    OUT --> NEXT{"Next step"}
+    NEXT -->|"Normal flow"| BUILD["➡️ /build"]
+    NEXT -->|"Future change"| ITERATE["🔄 /iterate"]
 
-    subgraph ADR_WHEN["Quando criar ADR?"]
+    subgraph ADR_WHEN["When to create an ADR?"]
         direction LR
-        W1["Escolha de framework/biblioteca"]
-        W2["Estratégia de autenticação"]
-        W3["Decisão de banco de dados"]
-        W4["Padrão de comunicação entre serviços"]
-        W5["Trade-off de performance vs. complexidade"]
+        W1["Framework/library choice"]
+        W2["Authentication strategy"]
+        W3["Database decision"]
+        W4["Service communication pattern"]
+        W5["Performance vs. complexity trade-off"]
     end
 
     subgraph ANTI["🚫 Anti-Patterns"]
-        A1["Arquitetura sem\ndiagrama ASCII"]
-        A2["Decisão sem ADR\n(não documentada)"]
-        A3["File manifest\nincompleto"]
-        A4["Over-engineering\n(YAGNI violado)"]
-        A5["Detalhes de impl.\njá no código (sem patterns)"]
+        A1["Architecture without\nASCII diagram"]
+        A2["Decision without ADR\n(undocumented)"]
+        A3["Incomplete\nfile manifest"]
+        A4["Over-engineering\n(YAGNI violated)"]
+        A5["Impl. details\nalready in code (no patterns)"]
     end
 
     classDef step fill:#0f3460,stroke:#533483,color:#fff
@@ -186,37 +186,37 @@ flowchart TD
     class ANTI,A1,A2,A3,A4,A5 anti
 ```
 
-## Regras Rápidas
+## Quick Rules
 
-| # | Regra |
-|---|---|
-| 1 | **GATE DURO**: sem `DEFINE_{FEATURE}.md` → bloqueado |
-| 2 | Diagrama **ASCII obrigatório** na arquitetura |
-| 3 | Toda decisão crítica precisa de **ADR inline** (7 elementos) |
-| 4 | File manifest deve cobrir **todos os arquivos** |
-| 5 | Agent matching via **routing.json** (não adivinhar) |
-| 6 | Code patterns devem ser **copy-paste ready** |
-| 7 | Testing strategy cobre **Unit + Integration + E2E** |
-| 8 | Confidence threshold: **0.95** (o mais alto do fluxo) |
+| # | Rule |
+| --- | --- |
+| 1 | **HARD GATE**: without `DEFINE_{FEATURE}.md` → blocked |
+| 2 | **ASCII diagram mandatory** in the architecture |
+| 3 | Every critical decision needs an **inline ADR** (7 elements) |
+| 4 | File manifest must cover **all files** |
+| 5 | Agent matching via **routing.json** (do not guess) |
+| 6 | Code patterns must be **copy-paste ready** |
+| 7 | Testing strategy covers **Unit + Integration + E2E** |
+| 8 | Confidence threshold: **0.95** (highest in the flow) |
 
-## ADR — Referência Rápida
+## ADR — Quick Reference
 
-```
-## ADR-001: [Título da Decisão]
+```markdown
+## ADR-001: [Decision Title]
 
 - **Status:** Accepted
 - **Date:** 2026-05-03
-- **Context:** [O que força essa decisão?]
-- **Choice:** [O que foi escolhido?]
-- **Rationale:** [Por quê essa opção?]
-- **Alternatives Rejected:** [O que foi descartado e por quê?]
-- **Consequences:** [Impactos e trade-offs]
+- **Context:** [What forces this decision?]
+- **Choice:** [What was chosen?]
+- **Rationale:** [Why this option?]
+- **Alternatives Rejected:** [What was discarded and why?]
+- **Consequences:** [Impacts and trade-offs]
 ```
 
-## File Manifest — Referência Rápida
+## File Manifest — Quick Reference
 
 | # | file_path | action | purpose | dependencies |
-|---|---|---|---|---|
-| 1 | `src/feature/handler.py` | CREATE | Entry point da feature | `src/models.py` |
-| 2 | `src/models.py` | MODIFY | Adicionar entidade X | — |
-| 3 | `tests/test_handler.py` | CREATE | Unit tests do handler | `src/feature/handler.py` |
+| --- | --- | --- | --- | --- |
+| 1 | `src/feature/handler.py` | CREATE | Feature entry point | `src/models.py` |
+| 2 | `src/models.py` | MODIFY | Add entity X | — |
+| 3 | `tests/test_handler.py` | CREATE | Handler unit tests | `src/feature/handler.py` |

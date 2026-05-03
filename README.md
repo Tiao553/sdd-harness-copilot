@@ -62,13 +62,13 @@ Detailed Mermaid flow diagrams with all rules, gates, and mental models:
 
 | Phase | Diagram |
 |---|---|
-| Overview (all phases) | [SDD_WORKFLOW_GRAPH.md](SDD_WORKFLOW_GRAPH.md) |
-| Phase 0 — Brainstorm | [SDD_PHASE0_BRAINSTORM.md](SDD_PHASE0_BRAINSTORM.md) |
-| Phase 1 — Define | [SDD_PHASE1_DEFINE.md](SDD_PHASE1_DEFINE.md) |
-| Phase 2 — Design | [SDD_PHASE2_DESIGN.md](SDD_PHASE2_DESIGN.md) |
-| Phase 3 — Build | [SDD_PHASE3_BUILD.md](SDD_PHASE3_BUILD.md) |
-| Phase 3.5 — Validate | [SDD_PHASE35_VALIDATE.md](SDD_PHASE35_VALIDATE.md) |
-| Phase 4 — Ship | [SDD_PHASE4_SHIP.md](SDD_PHASE4_SHIP.md) |
+| Overview (all phases) | [docs/workflow-graphic/SDD_WORKFLOW_GRAPH.md](docs/workflow-graphic/SDD_WORKFLOW_GRAPH.md) |
+| Phase 0 — Brainstorm | [docs/workflow-graphic/SDD_PHASE0_BRAINSTORM.md](docs/workflow-graphic/SDD_PHASE0_BRAINSTORM.md) |
+| Phase 1 — Define | [docs/workflow-graphic/SDD_PHASE1_DEFINE.md](docs/workflow-graphic/SDD_PHASE1_DEFINE.md) |
+| Phase 2 — Design | [docs/workflow-graphic/SDD_PHASE2_DESIGN.md](docs/workflow-graphic/SDD_PHASE2_DESIGN.md) |
+| Phase 3 — Build | [docs/workflow-graphic/SDD_PHASE3_BUILD.md](docs/workflow-graphic/SDD_PHASE3_BUILD.md) |
+| Phase 3.5 — Validate | [docs/workflow-graphic/SDD_PHASE35_VALIDATE.md](docs/workflow-graphic/SDD_PHASE35_VALIDATE.md) |
+| Phase 4 — Ship | [docs/workflow-graphic/SDD_PHASE4_SHIP.md](docs/workflow-graphic/SDD_PHASE4_SHIP.md) |
 
 ### Commands
 
@@ -325,7 +325,7 @@ Each command produces an artifact that feeds the next phase. If validation fails
 | [Tutorials](docs/tutorials/) | Practical AgentSpec workflows |
 | [Reference](docs/reference/) | Full skills, agents, KB, routing, and validation catalog |
 | [Skills Architecture](docs/skills-architecture.md) | Skill directory standard, routing_skill.json schema, command patterns, quality gates |
-| [SDD Phase Diagrams](SDD_WORKFLOW_GRAPH.md) | Mermaid flowcharts for all SDD phases |
+| [SDD Phase Diagrams](docs/workflow-graphic/SDD_WORKFLOW_GRAPH.md) | Mermaid flowcharts for all SDD phases |
 
 ---
 

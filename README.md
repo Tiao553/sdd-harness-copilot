@@ -1,4 +1,4 @@
-# Spec Driven Developing For Copilot
+# Spec Driven Developing for Copilot
 
 AgentSpec is a GitHub Copilot operating layer for spec-driven development. It transforms any repository into a routed multi-agent workspace where every response is grounded through a mandatory context protocol, intent is matched to the right specialist agent, slash-style skills expose structured command groups, 26 local knowledge-base domains provide on-demand reference material, and a full SDD (Spec-Driven Development) workflow carries features from initial brainstorm through validated build to shipped archive — all inside your IDE.
 

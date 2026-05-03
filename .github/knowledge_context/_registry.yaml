@@ -1,0 +1,19 @@
+version: "1.0"
+active_project: ""   # slug do projeto ativo — atualizar via /knowledge-context-commands /create-context <slug> --set-active
+
+projects: []
+# Exemplo de entrada:
+# - slug: "my-project"
+#   name: "My Project"
+#   description: "Descrição curta do projeto"
+#   created_at: "2026-05-03"
+#   context_files:
+#     required:
+#       - KNOWLEDGE_CONTEXT.md
+#     optional:
+#       - architecture.md
+#       - rules.md
+#       - roadmap.md
+#       - domain-glossary.md
+#       - integrations.md
+#   tags: []

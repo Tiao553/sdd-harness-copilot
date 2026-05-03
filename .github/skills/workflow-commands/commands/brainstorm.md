@@ -49,6 +49,7 @@ The `/workflow-commands /brainstorm` command explores ideas through dialogue bef
 
 ## What This Command Does
 
+0. **Knowledge Checkpoint** - Load active project context from `.github/knowledge_context/` and inject into session
 1. **Explore** - Understand project context and existing patterns
 2. **Question** - Ask one question at a time to clarify intent
 3. **Collect** - Gather sample files, ground truth, or reference data for LLM grounding
@@ -60,6 +61,33 @@ The `/workflow-commands /brainstorm` command explores ideas through dialogue bef
 ---
 
 ## Process
+
+### Step 0: Knowledge Checkpoint (executes before everything else)
+
+```markdown
+1. Read(.github/knowledge_context/_registry.yaml)
+   - If file does not exist → skip this step entirely, continue to Step 1
+   - If exists → read active_project field
+
+2. Read(.github/knowledge_context/{active_project}/KNOWLEDGE_CONTEXT.md)
+   - If active_project is empty or file missing → skip, continue to Step 1
+
+3. Validate required fields in KNOWLEDGE_CONTEXT.md:
+   - deployment_context.stack filled?
+   - deployment_context.entry_points filled?
+
+4. If any required field is empty or still a {placeholder}:
+   - Ask ONE question only:
+     "Para contextualizar a ideia: em qual módulo ou serviço você imagina que essa feature vai viver?"
+   - Save answer to deployment_context.entry_points in KNOWLEDGE_CONTEXT.md
+
+5. Inject into BRAINSTORM_{FEATURE}.md header (Technical Context Observed section):
+   - stack, entry_points, business_context from KNOWLEDGE_CONTEXT.md
+```
+
+**Rule:** This step never blocks the brainstorm. If the registry or KNOWLEDGE_CONTEXT.md is absent, proceed normally. One question maximum — never ask more than one during the checkpoint.
+
+---
 
 ### Step 1: Gather Context
 
@@ -150,6 +178,8 @@ Write(.github/sdd/features/{feature-name}/BRAINSTORM_{FEATURE}.md)
 Before marking complete:
 
 ```text
+[ ] Knowledge Checkpoint executed (or skipped gracefully if registry absent)
+[ ] deployment_context injected into BRAINSTORM header (if context available)
 [ ] Minimum 3 discovery questions asked
 [ ] Sample collection question asked
 [ ] At least 2 approaches explored

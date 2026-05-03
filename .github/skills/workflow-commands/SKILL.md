@@ -114,6 +114,20 @@ Se a intenção for clara mas o `/workflow-commands` estiver ausente, não execu
 | `/iterate` | Revisão e atualização cross-phase | `commands/iterate.md` | `iterate-agent` |
 | `/create-pr` | Criação de Pull Request | `commands/create-pr.md` | N/A |
 
+## Knowledge Context Commands
+
+Skill complementar para gestão de contexto de projeto. Invoke via `/knowledge-context-commands`.
+
+| Comando | Descrição | Skill |
+|---|---|---|
+| `/create-context` | Criar knowledge context completo para um projeto | `.github/skills/knowledge-context/commands/create-context.md` |
+| `/update-context` | Atualizar arquivos de contexto de um projeto existente | `.github/skills/knowledge-context/commands/update-context.md` |
+| `/check-context` | Auditar o knowledge context ativo e reportar gaps | `.github/skills/knowledge-context/commands/check-context.md` |
+
+> O Knowledge Context é carregado automaticamente no **Passo 0 do `/brainstorm`** (Knowledge Checkpoint). Configure o projeto ativo com `/knowledge-context-commands /create-context <slug> --set-active` antes de iniciar o workflow.
+>
+> Skill completo: `.github/skills/knowledge-context/SKILL.md`
+
 ### Fluxo de Fases
 
 ```text

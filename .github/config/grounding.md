@@ -14,7 +14,13 @@ Antes de qualquer resposta operacional neste workspace:
    - Máximo de 3 arquivos KB por request
 6. Ler `.github/config/security-settings.json` quando presente e aplicar a política de permissões antes de executar comandos ou alterar arquivos
 7. Verificar `_meta/STATUS.md` e `_meta/CONTEXT.md` no diretório atual ou ancestrais
-8. Se nenhuma rota corresponder, usar `default_agent` do routing.json
+8. **Carregar Knowledge Context do projeto ativo:**
+   - Ler `.github/knowledge_context/_registry.yaml` (se existir)
+   - Identificar `active_project` — se vazio ou arquivo ausente, pular sem bloquear
+   - Ler `.github/knowledge_context/{active_project}/KNOWLEDGE_CONTEXT.md`
+   - Glob `.github/knowledge_context/{active_project}/*.md` → carregar arquivos opcionais existentes (máximo 4 no total)
+   - Injetar `deployment_context` e `business_context` no bloco de grounding operacional como `Detected Project`
+9. Se nenhuma rota corresponder, usar `default_agent` do routing.json
 
 ## Política de Permissões Obrigatória
 
@@ -101,7 +107,7 @@ Declare sempre os arquivos carregados no bloco de grounding operacional.
 - Não pular o bloco de grounding em respostas operacionais
 - Não ignorar `/<nome>`; skill tem prioridade sobre roteamento por intent
 - Não iniciar fases SDD sem `/workflow-commands /<fase>`
-- Não assumir contexto de projeto sem verificar `_meta/`
+- Não assumir contexto de projeto sem verificar `_meta/` e `.github/knowledge_context/_registry.yaml`
 - Não carregar KB completo quando quick-reference for suficiente
 - Não iniciar BUILD sem gates SDD verificados quando aplicável
 - Preferir sempre `COPILOT.md` como fonte canônica se houver conflito

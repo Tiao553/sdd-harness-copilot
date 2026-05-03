@@ -11,47 +11,47 @@ metadata:
 
 # Knowledge Context Commands
 
-> Invoke: `/knowledge-context-commands` + descrição da tarefa
+> Invoke: `/knowledge-context-commands` + task description
 
-## Regras Globais Obrigatórias
+## Mandatory Global Rules
 
-Estas regras valem para todos os comandos desta skill. Se houver conflito com blocos legados migrados, esta seção vence.
+These rules apply to all commands in this skill. If there is a conflict with migrated legacy blocks, this section wins.
 
-### Grounding e Agente
+### Grounding and Agent
 
-1. Antes de executar qualquer comando, leia `.github/config/grounding.md`.
-2. Leia `.github/config/routing.json`; se nenhuma rota específica casar, execute diretamente sem delegar a agente especialista.
-3. Carregue apenas os arquivos de contexto necessários de `.github/knowledge_context/{slug}/`; nunca carregue todos os projetos de uma vez.
-4. Toda resposta operacional deve iniciar com o bloco `[GROUNDING]` exigido por `.github/config/grounding.md`.
+1. Before executing any command, read `.github/config/grounding.md`.
+2. Read `.github/config/routing.json`; if no specific route matches, execute directly without delegating to a specialist agent.
+3. Load only the necessary context files from `.github/knowledge_context/{slug}/`; never load all projects at once.
+4. Every operational response must begin with the `[GROUNDING]` block required by `.github/config/grounding.md`.
 
-### Caminhos Canônicos
+### Canonical Paths
 
-| Tipo | Caminho correto |
+| Type | Correct path |
 |---|---|
 | Registry | `.github/knowledge_context/_registry.yaml` |
 | Templates | `.github/knowledge_context/_templates/` |
-| Contexto raiz | `.github/knowledge_context/{slug}/KNOWLEDGE_CONTEXT.md` |
-| Arquitetura | `.github/knowledge_context/{slug}/architecture.md` |
-| Regras | `.github/knowledge_context/{slug}/rules.md` |
+| Root context | `.github/knowledge_context/{slug}/KNOWLEDGE_CONTEXT.md` |
+| Architecture | `.github/knowledge_context/{slug}/architecture.md` |
+| Rules | `.github/knowledge_context/{slug}/rules.md` |
 | Roadmap | `.github/knowledge_context/{slug}/roadmap.md` |
-| Glossário | `.github/knowledge_context/{slug}/domain-glossary.md` |
-| Integrações | `.github/knowledge_context/{slug}/integrations.md` |
+| Glossary | `.github/knowledge_context/{slug}/domain-glossary.md` |
+| Integrations | `.github/knowledge_context/{slug}/integrations.md` |
 
-### Estrutura Mínima de um Knowledge Context
+### Minimum Knowledge Context Structure
 
 ```text
 .github/knowledge_context/{slug}/
-├── KNOWLEDGE_CONTEXT.md     ← obrigatório
-├── architecture.md          ← recomendado
-├── rules.md                 ← recomendado
-├── roadmap.md               ← opcional
-├── domain-glossary.md       ← opcional
-└── integrations.md          ← opcional
+├── KNOWLEDGE_CONTEXT.md     ← required
+├── architecture.md          ← recommended
+├── rules.md                 ← recommended
+├── roadmap.md               ← optional
+├── domain-glossary.md       ← optional
+└── integrations.md          ← optional
 ```
 
-Crie arquivos a partir de `.github/knowledge_context/_templates/`:
+Create files from `.github/knowledge_context/_templates/`:
 
-| Saída | Template |
+| Output | Template |
 |---|---|
 | `KNOWLEDGE_CONTEXT.md` | `_templates/KNOWLEDGE_CONTEXT.md` |
 | `architecture.md` | `_templates/architecture.md` |
@@ -59,23 +59,23 @@ Crie arquivos a partir de `.github/knowledge_context/_templates/`:
 | `roadmap.md` | `_templates/roadmap.md` |
 | `domain-glossary.md` | `_templates/domain-glossary.md` |
 | `integrations.md` | `_templates/integrations.md` |
-| entrada do registry | `_registry.yaml` campo `projects[]` |
+| registry entry | `_registry.yaml` field `projects[]` |
 
-Se `.github/knowledge_context/_registry.yaml` não existir, crie com estrutura base antes de registrar o primeiro projeto. Se existir, atualize apenas a entrada do projeto impactado.
+If `.github/knowledge_context/_registry.yaml` does not exist, create it with a base structure before registering the first project. If it exists, update only the entry for the impacted project.
 
-## Comandos Disponíveis
+## Available Commands
 
-| Comando | Descrição | Arquivo |
+| Command | Description | File |
 |---|---|---|
-| `/create-context` | Criar knowledge context completo para um projeto | `commands/create-context.md` |
-| `/update-context` | Atualizar arquivos de contexto de um projeto existente | `commands/update-context.md` |
-| `/check-context` | Auditar o knowledge context ativo e reportar gaps | `commands/check-context.md` |
+| `/create-context` | Create a complete knowledge context for a project | `commands/create-context.md` |
+| `/update-context` | Update context files for an existing project | `commands/update-context.md` |
+| `/check-context` | Audit the active knowledge context and report gaps | `commands/check-context.md` |
 
-### Escalação
+### Escalation
 
-- Se `/create-context` revelar conflito com slug existente, pergunte antes de sobrescrever.
-- Se `/update-context` revelar mudança arquitetural grande, proponha plano antes de editar múltiplos arquivos.
-- Se `/check-context` detectar `active_project` apontando para slug inexistente, corrija o registry antes de continuar.
+- If `/create-context` reveals a conflict with an existing slug, ask before overwriting.
+- If `/update-context` reveals a large architectural change, propose a plan before editing multiple files.
+- If `/check-context` detects `active_project` pointing to a non-existent slug, fix the registry before continuing.
 
 ## See Also
 

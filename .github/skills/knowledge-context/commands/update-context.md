@@ -29,36 +29,36 @@ description: Update context files for an existing project — full file or targe
 ## What Happens
 
 1. **Load current state**
-   - Ler `_registry.yaml` e verificar que o slug existe
-   - Se `--file` especificado: carregar apenas esse arquivo
-   - Se não especificado: carregar `KNOWLEDGE_CONTEXT.md` + listar arquivos existentes e perguntar qual atualizar
+   - Read `_registry.yaml` and verify the slug exists
+   - If `--file` specified: load only that file
+   - If not specified: load `KNOWLEDGE_CONTEXT.md` + list existing files and ask which one to update
 
 2. **Identify changes**
-   - Apresentar conteúdo atual do(s) arquivo(s)
-   - Perguntar o que precisa ser atualizado (campo, seção ou arquivo completo)
-   - Classificar impacto: Additive (novo campo) / Modifying (alterar existente) / Architectural (mudança de stack ou estrutura)
+   - Show current content of the file(s)
+   - Ask what needs to be updated (field, section, or full file)
+   - Classify impact: Additive (new field) / Modifying (change existing) / Architectural (stack or structure change)
 
 3. **Apply update**
-   - Editar campos/seções especificados
-   - Atualizar campo `Last Updated: YYYY-MM-DD` em `KNOWLEDGE_CONTEXT.md`
-   - Se `--set-active`: atualizar `active_project` em `_registry.yaml`
+   - Edit the specified fields/sections
+   - Update the `Last Updated: YYYY-MM-DD` field in `KNOWLEDGE_CONTEXT.md`
+   - If `--set-active`: update `active_project` in `_registry.yaml`
 
 4. **Cascade check**
-   - Se mudança em `deployment_context` ou stack: alertar que features em andamento (BRAINSTORM/DEFINE/DESIGN) podem precisar de `/iterate`
+   - If `deployment_context` or stack changed: warn that in-progress features (BRAINSTORM/DEFINE/DESIGN) may need `/iterate`
 
 5. **Report**
-   - Listar campos modificados
-   - Indicar se cascade foi detectado
+   - List modified fields
+   - Indicate whether a cascade was detected
 
 ---
 
 ## Quality Gates
 
-Antes de atualizar:
+Before updating:
 
-- Slug deve existir em `_registry.yaml`.
-- Mudanças arquiteturais (stack, cloud, estrutura) devem ser confirmadas antes de aplicar.
-- Campo `Last Updated` deve ser atualizado em toda edição de `KNOWLEDGE_CONTEXT.md`.
+- Slug must exist in `_registry.yaml`.
+- Architectural changes (stack, cloud, structure) must be confirmed before applying.
+- `Last Updated` field must be updated on every edit to `KNOWLEDGE_CONTEXT.md`.
 
 ---
 
@@ -67,19 +67,19 @@ Antes de atualizar:
 ```text
 Knowledge Context Updated: .github/knowledge_context/{slug}/
 Changes:
-  ✅ {filename} — {campos alterados}
+  ✅ {filename} — {changed fields}
 
 Last Updated: YYYY-MM-DD
 
-Cascade Warning (se aplicável):
-  ⚠️  deployment_context mudou — revisar BRAINSTORM/DEFINE/DESIGN em andamento com /iterate
+Cascade Warning (if applicable):
+  ⚠️  deployment_context changed — review in-progress BRAINSTORM/DEFINE/DESIGN with /iterate
 ```
 
 ---
 
 ## Next Step
 
-`/knowledge-context-commands /check-context {slug}` — para confirmar que o contexto está completo após a atualização.
+`/knowledge-context-commands /check-context {slug}` — to confirm the context is complete after the update.
 
 ## See Also
 

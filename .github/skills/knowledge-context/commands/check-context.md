@@ -27,50 +27,50 @@ description: Audit the knowledge context of a project — reports completeness, 
 ## What Happens
 
 1. **Resolve target**
-   - Sem argumento: usar `active_project` do `_registry.yaml`
-   - Com `<slug>`: auditar esse projeto específico
-   - Com `--all`: auditar todos os projetos registrados
+   - No argument: use `active_project` from `_registry.yaml`
+   - With `<slug>`: audit that specific project
+   - With `--all`: audit all registered projects
 
 2. **Registry check**
-   - `_registry.yaml` existe?
-   - `active_project` aponta para slug válido?
-   - Projeto tem entrada no registry?
+   - Does `_registry.yaml` exist?
+   - Does `active_project` point to a valid slug?
+   - Does the project have an entry in the registry?
 
-3. **File check** — para cada arquivo do projeto:
+3. **File check** — for each project file:
 
-   | Arquivo | Obrigatório | Verificar |
+   | File | Required | Check |
    |---|---|---|
-   | `KNOWLEDGE_CONTEXT.md` | ✅ Sim | `deployment_context` preenchido? `business_context` preenchido? `Last Updated` recente? |
-   | `architecture.md` | Recomendado | Stack definida? Component map presente? |
-   | `rules.md` | Recomendado | Conventions listadas? Anti-patterns definidos? |
-   | `roadmap.md` | Opcional | Current phase definida? Milestones listados? |
-   | `domain-glossary.md` | Opcional | Entidades principais definidas? |
-   | `integrations.md` | Opcional | APIs externas documentadas? |
+   | `KNOWLEDGE_CONTEXT.md` | ✅ Yes | `deployment_context` filled? `business_context` filled? `Last Updated` recent? |
+   | `architecture.md` | Recommended | Stack defined? Component map present? |
+   | `rules.md` | Recommended | Conventions listed? Anti-patterns defined? |
+   | `roadmap.md` | Optional | Current phase defined? Milestones listed? |
+   | `domain-glossary.md` | Optional | Core entities defined? |
+   | `integrations.md` | Optional | External APIs documented? |
 
-4. **Health score** — cálculo determinístico (0–100):
+4. **Health score** — deterministic calculation (0–100):
 
-   | Item | Peso |
+   | Item | Weight |
    |---|---|
-   | `KNOWLEDGE_CONTEXT.md` existe e completo | 30 |
-   | `architecture.md` existe e preenchida | 25 |
-   | `rules.md` existe e preenchida | 20 |
-   | `roadmap.md` existe | 10 |
-   | `domain-glossary.md` existe | 8 |
-   | `integrations.md` existe | 7 |
+   | `KNOWLEDGE_CONTEXT.md` exists and complete | 30 |
+   | `architecture.md` exists and filled | 25 |
+   | `rules.md` exists and filled | 20 |
+   | `roadmap.md` exists | 10 |
+   | `domain-glossary.md` exists | 8 |
+   | `integrations.md` exists | 7 |
 
-5. **Gap report** — listar campos com `{placeholder}` ou vazios como ações concretas
+5. **Gap report** — list fields with `{placeholder}` or empty as concrete action items
 
-6. **Cascade warning** — se `active_project` mudou recentemente, alertar sobre features em andamento
+6. **Cascade warning** — if `active_project` changed recently, alert about in-progress features
 
 ---
 
 ## Quality Gates
 
-Antes de reportar:
+Before reporting:
 
-- Se `_registry.yaml` não existir: reportar como gap crítico, sugerir `/create-context`.
-- Se `active_project` não tiver diretório correspondente: reportar como gap crítico.
-- Nunca inferir dados — reportar o que existe literalmente.
+- If `_registry.yaml` does not exist: report as critical gap, suggest `/create-context`.
+- If `active_project` has no corresponding directory: report as critical gap.
+- Never infer data — report only what literally exists.
 
 ---
 
@@ -113,8 +113,8 @@ Next /brainstorm will inject: stack, entry_points, business_context automaticall
 
 ## Next Steps
 
-- Gaps encontrados → `/knowledge-context-commands /update-context {slug} --file <filename>`
-- Projeto não existe → `/knowledge-context-commands /create-context {slug}`
+- Gaps found → `/knowledge-context-commands /update-context {slug} --file <filename>`
+- Project does not exist → `/knowledge-context-commands /create-context {slug}`
 
 ## See Also
 

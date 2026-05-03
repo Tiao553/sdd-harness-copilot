@@ -27,36 +27,36 @@ description: Create a complete knowledge context for a new project from template
 ## What Happens
 
 1. **Validate prerequisites**
-   - Verificar se `.github/knowledge_context/_templates/` existe
-   - Se `_registry.yaml` não existir, criar com estrutura base
-   - Verificar se o slug já existe — se sim, perguntar antes de sobrescrever
+   - Check that `.github/knowledge_context/_templates/` exists
+   - If `_registry.yaml` does not exist, create it with base structure
+   - Check if the slug already exists — if so, ask before overwriting
 
 2. **Normalize slug**
-   - Converter para `kebab-case`
-   - Ex: `My Project` → `my-project`, `DATA_PLATFORM` → `data-platform`
+   - Convert to `kebab-case`
+   - e.g. `My Project` → `my-project`, `DATA_PLATFORM` → `data-platform`
 
 3. **Scaffold directory**
-   - Criar `.github/knowledge_context/{slug}/`
-   - Copiar todos os arquivos de `.github/knowledge_context/_templates/`
-   - Substituir `{Project Name}` e `{slug}` nos arquivos copiados
+   - Create `.github/knowledge_context/{slug}/`
+   - Copy all files from `.github/knowledge_context/_templates/`
+   - Replace `{Project Name}` and `{slug}` in the copied files
 
 4. **Register project**
-   - Adicionar entrada em `_registry.yaml` com `slug`, `name`, `created_at`, `context_files`
-   - Se `--set-active`: atualizar `active_project: {slug}`
+   - Add entry to `_registry.yaml` with `slug`, `name`, `created_at`, `context_files`
+   - If `--set-active`: update `active_project: {slug}`
 
 5. **Report**
-   - Listar arquivos criados
-   - Indicar próximos campos obrigatórios a preencher em `KNOWLEDGE_CONTEXT.md`
+   - List created files
+   - Indicate the required fields to fill in `KNOWLEDGE_CONTEXT.md`
 
 ---
 
 ## Quality Gates
 
-Antes de criar:
+Before creating:
 
-- Slug deve estar em `kebab-case`.
-- Slug não pode sobrescrever contexto existente sem confirmação explícita do usuário.
-- Templates obrigatórios devem existir em `_templates/`.
+- Slug must be in `kebab-case`.
+- Slug cannot overwrite an existing context without explicit user confirmation.
+- Required templates must exist in `_templates/`.
 
 ---
 
@@ -65,24 +65,24 @@ Antes de criar:
 ```text
 Knowledge Context Created: .github/knowledge_context/{slug}/
 Files:
-  ✅ KNOWLEDGE_CONTEXT.md    ← preencher: deployment_context, business_context
-  ✅ architecture.md         ← preencher: stack, components
-  ✅ rules.md                ← preencher: conventions, guardrails
-  ✅ roadmap.md              ← preencher: milestones, current phase
-  ✅ domain-glossary.md      ← preencher: entities, terms
-  ✅ integrations.md         ← preencher: external APIs, contracts
+  ✅ KNOWLEDGE_CONTEXT.md    ← fill in: deployment_context, business_context
+  ✅ architecture.md         ← fill in: stack, components
+  ✅ rules.md                ← fill in: conventions, guardrails
+  ✅ roadmap.md              ← fill in: milestones, current phase
+  ✅ domain-glossary.md      ← fill in: entities, terms
+  ✅ integrations.md         ← fill in: external APIs, contracts
 
 Registry: .github/knowledge_context/_registry.yaml
-Active Project: {slug} (se --set-active) | unchanged (se não)
+Active Project: {slug} (if --set-active) | unchanged (if not)
 
-Next: preencher KNOWLEDGE_CONTEXT.md com deployment_context antes de /brainstorm
+Next: fill KNOWLEDGE_CONTEXT.md with deployment_context before running /brainstorm
 ```
 
 ---
 
 ## Next Step
 
-`/knowledge-context-commands /check-context {slug}` — para auditar o que ainda precisa ser preenchido.
+`/knowledge-context-commands /check-context {slug}` — to audit what still needs to be filled in.
 
 ## See Also
 

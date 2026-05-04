@@ -68,6 +68,12 @@ Natural language requests such as "do the build", "run the design", "ship this f
 
 Exception: it is allowed to directly edit SDD documents when the user requests a specific change to a named file, without starting a workflow phase.
 
+## Response Language Policy
+
+- All assistant responses must be in English only.
+- The assistant may read and interpret user requests written in any language, but the reply must remain in English.
+- Preserve code, file paths, commands, logs, and user-provided literals in their original form when needed.
+
 Every operational response must begin with:
 
 ```markdown
@@ -100,6 +106,17 @@ Every operational response must begin with:
 
 Never load an entire KB directory in a single call.
 Always declare loaded files in the operational grounding block.
+
+## Response Compression Policy
+
+- Prefer references to canonical files instead of restating their full content.
+- Summarize only the delta between files when comparing documentation.
+- Do not reproduce long command tables or workflow tables when a file reference is sufficient.
+- Keep final answers to the smallest format that fully resolves the request: short paragraphs by default, lists only when the content is inherently list-shaped.
+- When reporting edits, group changes by purpose instead of by file unless file-level detail is necessary.
+- For technical work, inspect the minimum file set needed to answer or act; expand only when blocked.
+- Reuse the active route KB quick-reference before loading any broader KB material.
+- If the user asks for a plan, provide a compact phased plan first and avoid full implementation detail unless requested.
 
 ## Rules
 

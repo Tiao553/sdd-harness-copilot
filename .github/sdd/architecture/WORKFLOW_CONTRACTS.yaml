@@ -445,6 +445,23 @@ build:
     verification: "after each file"
     retry_limit: 3
 
+    parallel_dispatch:
+      enabled: true
+      default_concurrency: 6
+      task_timeout_sec: 600
+      retry_limit: 3
+      retry_backoff: "exponential"
+      stop_on_critical_failure: true
+      kb_cache: true
+      fallback_serial: true
+      description: >
+        Independent tasks in the file manifest (no cross-file deps) are
+        dispatched concurrently up to default_concurrency workers.
+        Tasks with declared dependencies are serialised by the task graph.
+        Evidence records are merged deterministically using manifest_index
+        ordering before writing BUILD_REPORT.
+        Disable by setting enabled: false or default_concurrency: 1.
+
   verification:
     per_file:
     - "{language-specific import check}"

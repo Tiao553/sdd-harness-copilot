@@ -365,3 +365,98 @@ PRE-FLIGHT CHECK
 **Mission:** Transform designs into working code by delegating to specialized agents, following KB patterns, and verifying every file before completion.
 
 **Core Principle:** KB first. Confidence always. Ask when uncertain.
+
+---
+
+## Parallel Dispatcher
+
+> **Source of truth for configuration:** `.github/sdd/architecture/WORKFLOW_CONTRACTS.yaml` → `build.execution.parallel_dispatch`
+
+### Why parallel dispatch
+
+The file manifest produced by design-agent contains tasks with explicit `Dependencies` columns. Tasks with no shared dependencies (in-degree = 0 within a wave) can safely run concurrently. Sequential execution forces all tasks into a single chunk, increasing wall time unnecessarily.
+
+### Algorithm
+
+```text
+1. PARSE MANIFEST
+   └─ Extract tasks, file_path, agent_name, deps from DESIGN manifest table.
+   └─ Assign manifest_index (row number) to each task for deterministic ordering.
+
+2. BUILD TASK GRAPH
+   └─ Compute in-degree for each task from its deps column.
+   └─ Build dependents index: dep_id → list of tasks that depend on it.
+
+3. KB CACHE PRELOAD (once per build run)
+   └─ Collect all KB domains from DESIGN + assigned agent files.
+   └─ Preload quick-reference files into in-memory cache.
+   └─ Pass KB cache identifiers to subagent prompts (not full file content).
+
+4. WAVE DISPATCH (Kahn's algorithm)
+   └─ Wave = all tasks with in_degree == 0 not yet started.
+   └─ Within each wave: dispatch up to concurrency workers in parallel.
+   └─ Each worker wraps agent.runSubagent in retry loop (exponential backoff).
+   └─ On worker completion: update in_degree of dependents; push newly ready tasks.
+
+5. EVIDENCE COLLECTION
+   └─ Each worker returns an EvidenceRecord (gate_items + verification).
+   └─ Records written to per-run evidence store (in-memory, keyed by task_id).
+
+6. STOP-ON-CRITICAL-FAILURE
+   └─ After each wave: check for FAIL + blocker records.
+   └─ If found AND stop_on_critical_failure=true: halt, write BUILD_REPORT with blockers.
+
+7. DETERMINISTIC MERGE
+   └─ After all waves: sort EvidenceRecords by manifest_index (ties by task_id).
+   └─ Write BUILD_REPORT sections in that order.
+```
+
+### Configuration (from WORKFLOW_CONTRACTS)
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `enabled` | `true` | Set to `false` or `concurrency: 1` for serial fallback |
+| `default_concurrency` | `6` | Max simultaneous subagent calls per wave |
+| `task_timeout_sec` | `600` | Per-task wall-time limit before retry |
+| `retry_limit` | `3` | Max attempts per task (exponential backoff between) |
+| `stop_on_critical_failure` | `true` | Halt build if any wave produces a FAIL + blocker |
+| `kb_cache` | `true` | Preload KB once and share identifiers across subagents |
+| `fallback_serial` | `true` | Auto-serial when concurrency=1 or enabled=false |
+
+### Helper module
+
+The dispatcher logic lives in `scripts/build_parallel.py`. Public API:
+
+```python
+from build_parallel import (
+    parse_manifest,      # DESIGN content → List[ManifestTask]
+    build_task_graph,    # tasks → TaskGraph (in_degree, dependents)
+    run_parallel_build,  # graph + subagent_fn + config → List[EvidenceRecord]
+    merge_evidence,      # sort records by manifest_index
+    render_build_report_section,  # records → BUILD_REPORT markdown section
+)
+```
+
+### Subagent function contract
+
+`subagent_fn` is an `async` callable that wraps `agent.runSubagent`:
+
+```python
+async def subagent_fn(task: ManifestTask) -> EvidenceRecord:
+    record = await agent.runSubagent(
+        agent=task.agent_name or "general",
+        task=f"Create {task.file_path}",
+        prompt=build_delegation_prompt(task, kb_cache),
+    )
+    return parse_evidence(task, record)
+```
+
+Return `EvidenceRecord.status = "PASS"` on success, `"FAIL"` with `blocker` field set on critical failure.
+
+### Ordering guarantee
+
+BUILD_REPORT task rows always appear in manifest_index order regardless of which tasks finished first. Use `merge_evidence()` before `render_build_report_section()`.
+
+### Backwards compatibility
+
+Set `build.execution.parallel_dispatch.enabled: false` in WORKFLOW_CONTRACTS to revert to the original serial behavior at any time without changing agent logic.

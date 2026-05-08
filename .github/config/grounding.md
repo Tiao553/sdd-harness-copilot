@@ -94,6 +94,59 @@ Every operational response must begin with:
 > | Prompt Tokens | `~<estimate>` |
 ```
 
+## Agent Execution Loop (Ralph Loop)
+
+When an agent task involves file generation, code editing, or validation, the agent **MUST** execute the Ralph Loop protocol. This is mandatory — skipping the loop violates grounding.
+
+### Loop Protocol
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                      RALPH LOOP (max 6 iterations)          │
+│                                                             │
+│  1. READ    → Read current file state + errors + output     │
+│  2. ACT     → Write / edit / run command                    │
+│  3. LOOP    → Observe result: done? → exit / else continue  │
+│  4. PLAN    → Reformulate if output ≠ expected              │
+│  5. HANDLE  → Catch failure → retry, replan, or escalate    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Loop Gates (Analysis Checkpoints)
+
+Each iteration must pass the following gates before proceeding to the next:
+
+| Gate | Trigger | Check | Action on Failure |
+|---|---|---|---|
+| **G1 — Syntax** | After every file write | `get_errors` returns `[]` | Fix syntax → retry (same iteration) |
+| **G2 — Lint** | Iterations 1, 3, 5 | No lint warnings in errors | Fix lint → continue loop |
+| **G3 — Test** | After every terminal run | Exit code `0` + no FAIL lines | Diagnose → replan → next iteration |
+| **G4 — Contract** | Iterations 2, 4, 6 | Output matches WORKFLOW_CONTRACTS schema | Adjust against contract → continue |
+| **G5 — Regression** | Final iteration only | Previously passing tests still pass | Rollback last edit → escalate |
+| **G6 — Escalation** | Iteration limit reached (6) | Any gate still failing | Write BLOCKER to report → halt phase |
+
+### Loop Execution Rules
+
+- `max_iterations: 6` — hard limit per file or task unit
+- After iteration 3, log a **Mid-Loop Analysis** entry: what changed, what still fails, revised plan
+- After iteration 6 with failures, write a `BLOCKER` entry in the phase report — do **not** silently continue
+- If G5 (regression) fails, do not proceed to next file — escalate immediately
+- Loop evidence must be recorded in `BUILD_REPORT` or `VALIDATION_REPORT` as `loop_trace`
+
+### Loop Evidence Format (append to phase report)
+
+```markdown
+### Loop Trace — {file or task}
+| Iter | Gate | Result | Action Taken |
+|------|------|--------|--------------|
+| 1    | G1   | FAIL   | Fixed missing import |
+| 2    | G1,G4| PASS   | Continued |
+| 3    | G3   | FAIL   | Test expected 200, got 404 — replanned endpoint |
+| 4    | G1,G3| PASS   | Clean |
+```
+
+---
+
 ## Token Budget Strategy
 
 | Situation | Action |

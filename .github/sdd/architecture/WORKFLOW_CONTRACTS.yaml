@@ -142,8 +142,46 @@ brainstorm:
     principles:
     - one_question_at_a_time: "Never ask multiple questions in one message"
     - multiple_choice_preferred: "Easier to answer than open-ended"
-    - minimum_questions: 8
+    - minimum_questions: 9
     - open_ended_ok: "When exploring unknown territory"
+    question_bank:
+      required:
+      - id: Q1
+        type: "multiple_choice"
+        focus: "primary_use_case"
+        text: "What is the primary use case? (a) Internal tooling (b) Customer-facing product (c) Data pipeline (d) API/integration"
+      - id: Q2
+        type: "open_ended"
+        focus: "pain_point"
+        text: "What is the current pain point this feature solves? Describe the situation before the solution exists."
+      - id: Q3
+        type: "multiple_choice"
+        focus: "users_and_scale"
+        text: "Who are the primary users and at what scale? (a) Single team <10 (b) Department 10-100 (c) Organization 100+ (d) External customers"
+      - id: Q4
+        type: "clarifying"
+        focus: "success_criteria"
+        text: "How will you know this feature is successful? What does 'done' look like from a business perspective?"
+      - id: Q5
+        type: "multiple_choice"
+        focus: "constraints"
+        text: "What are the hard constraints? (a) Must use existing stack (b) Deadline-driven (c) Budget/resource capped (d) Regulatory/compliance (e) None"
+      - id: Q6
+        type: "open_ended"
+        focus: "existing_solutions"
+        text: "Are there existing tools, scripts, or processes that partially solve this? What do they do well and where do they fall short?"
+      - id: Q7
+        type: "multiple_choice"
+        focus: "integration_surface"
+        text: "What systems must this integrate with? (a) No external integration (b) Internal APIs only (c) Third-party services (d) Databases/warehouses (e) Multiple of the above"
+      - id: Q8
+        type: "clarifying"
+        focus: "risk_and_rollback"
+        text: "What is the risk if this feature fails in production? Is there a rollback plan or fallback mechanism expected?"
+      - id: Q9
+        type: "open_ended"
+        focus: "future_evolution"
+        text: "How do you expect this feature to evolve in the next 6-12 months? What would a v2 look like?"
 
   approaches:
     minimum: 2
@@ -186,13 +224,47 @@ brainstorm:
     - "Schema examples ensure format consistency"
 
   quality_gate:
-    minimum_questions: 3
+    minimum_questions: 9
     sample_collection_asked: true
     minimum_approaches: 2
     minimum_validations: 2
     user_confirmed_approach: true
     yagni_applied: true
     draft_requirements_included: true
+
+  loop_policy:
+    max_iterations: 6
+    trigger: "get_errors returns non-empty OR test exit code != 0"
+    exit_condition: "get_errors returns [] AND all tests pass"
+    mid_loop_analysis_at: [3]
+    gates:
+      G1_syntax:
+        check: "get_errors returns []"
+        trigger: "after every file write"
+        on_failure: "fix syntax → retry same iteration"
+      G2_lint:
+        check: "no lint warnings in errors"
+        trigger: "iterations 1, 3, 5"
+        on_failure: "fix lint → continue loop"
+      G3_test:
+        check: "exit code 0 and no FAIL lines in output"
+        trigger: "after every terminal run"
+        on_failure: "diagnose → replan → next iteration"
+      G4_contract:
+        check: "output matches WORKFLOW_CONTRACTS schema"
+        trigger: "iterations 2, 4, 6"
+        on_failure: "adjust against contract → continue"
+      G5_regression:
+        check: "previously passing tests still pass"
+        trigger: "final iteration only"
+        on_failure: "rollback last edit → escalate immediately"
+      G6_escalation:
+        check: "any gate still failing at iteration 6"
+        trigger: "iteration limit reached"
+        on_failure: "write BLOCKER to phase report → halt phase"
+    on_limit_exceeded: "write BLOCKER entry to BUILD_REPORT or VALIDATION_REPORT → halt"
+    evidence_required: true
+    evidence_format: "loop_trace table in phase report (iter, gate, result, action)"
 
   anti_patterns:
   - question_dump: "Asking multiple questions at once"

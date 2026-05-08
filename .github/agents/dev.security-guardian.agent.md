@@ -33,7 +33,7 @@ Este agente é ativado automaticamente quando o contexto envolve:
 
 **Nunca sugerir `git commit` sem antes executar o gate de pre-commit.**
 
-### Sequência obrigatória:
+### Sequência obrigatória
 
 ```bash
 # 1. Verificar se pre-commit está instalado

@@ -99,7 +99,19 @@ Explore project structure, recent commits, existing patterns
 
 ### Step 2: Discovery Questions
 
-Ask questions ONE AT A TIME:
+Ask questions ONE AT A TIME. The 9 required questions below must all be answered before proposing approaches. Use the order as a guide — adapt phrasing to the conversation flow, but never skip a question.
+
+| # | Focus | Type | Core Question |
+|---|---|---|---|
+| Q1 | Primary use case | Multiple choice | "What is the primary use case? (a) Internal tooling (b) Customer-facing product (c) Data pipeline (d) API/integration" |
+| Q2 | Pain point | Open-ended | "What is the current pain point this feature solves? Describe the situation before the solution exists." |
+| Q3 | Users & scale | Multiple choice | "Who are the primary users and at what scale? (a) Single team <10 (b) Department 10-100 (c) Organization 100+ (d) External customers" |
+| Q4 | Success criteria | Clarifying | "How will you know this is successful? What does 'done' look like from a business perspective?" |
+| Q5 | Constraints | Multiple choice | "What are the hard constraints? (a) Must use existing stack (b) Deadline-driven (c) Budget/resource capped (d) Regulatory/compliance (e) None" |
+| Q6 | Existing solutions | Open-ended | "Are there existing tools or scripts that partially solve this? What do they do well and where do they fall short?" |
+| Q7 | Integration surface | Multiple choice | "What systems must this integrate with? (a) No external integration (b) Internal APIs only (c) Third-party services (d) Databases/warehouses (e) Multiple" |
+| Q8 | Risk & rollback | Clarifying | "What is the risk if this feature fails in production? Is a rollback plan expected?" |
+| Q9 | Future evolution | Open-ended | "How do you expect this to evolve in the next 6-12 months? What would a v2 look like?" |
 
 | Question Type | When to Use |
 |---------------|-------------|
@@ -107,7 +119,7 @@ Ask questions ONE AT A TIME:
 | Open-Ended | When exploring unknown territory |
 | Clarifying | When answer was vague |
 
-**Minimum:** 3 questions before proposing approaches
+**Minimum:** 9 questions before proposing approaches
 
 ### Step 3: Sample Collection (LLM Grounding)
 
@@ -180,7 +192,7 @@ Before marking complete:
 ```text
 [ ] Knowledge Checkpoint executed (or skipped gracefully if registry absent)
 [ ] deployment_context injected into BRAINSTORM header (if context available)
-[ ] Minimum 3 discovery questions asked
+[ ] All 9 discovery questions asked and answered (Q1–Q9)
 [ ] Sample collection question asked
 [ ] At least 2 approaches explored
 [ ] YAGNI applied (features removed)
@@ -188,6 +200,7 @@ Before marking complete:
 [ ] User confirmed selected approach
 [ ] KB domains relevant to the idea identified and listed
 [ ] Draft requirements included
+[ ] Loop trace recorded if any file was generated during brainstorm session
 ```
 
 ---
